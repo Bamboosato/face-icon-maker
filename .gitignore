@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.playwright-mcp/
+
+*.local
+*.tsbuildinfo
+
+face-icon-maker-*.png
+
+test-assets/manual/*
+!test-assets/manual/.gitkeep
