@@ -1,8 +1,7 @@
-import { Check, Circle, Square, Upload } from "lucide-react";
+import { Check, Circle, Square } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import ReactCrop, { type Crop as ReactCropValue } from "react-image-crop";
 import { clampCropToImage } from "../services/cropService";
-import { shareIcon } from "../services/exportService";
 import type { CropArea, IconShape } from "../types/crop";
 import type { ProcessedImage } from "../types/image";
 import { IconPreview } from "./IconPreview";
@@ -29,20 +28,10 @@ export function CropEditor({
 }: CropEditorProps) {
   const percentCrop = useMemo(() => toPercentCrop(crop, image), [crop, image]);
   const [uiCrop, setUiCrop] = useState<ReactCropValue>(percentCrop);
-  const [sharing, setSharing] = useState(false);
 
   useEffect(() => {
     setUiCrop(percentCrop);
   }, [percentCrop]);
-
-  async function handleShare() {
-    try {
-      setSharing(true);
-      await shareIcon(image, crop, shape);
-    } finally {
-      setSharing(false);
-    }
-  }
 
   return (
     <section className="work-surface" aria-labelledby="crop-title">
@@ -96,15 +85,6 @@ export function CropEditor({
             <button type="button" className="primary-action" onClick={onComplete}>
               <Check size={19} aria-hidden="true" />
               Done
-            </button>
-            <button
-              type="button"
-              className="icon-button share-button"
-              disabled={sharing}
-              onClick={handleShare}
-              aria-label="Share PNG"
-            >
-              <Upload size={22} aria-hidden="true" />
             </button>
           </div>
         </aside>
