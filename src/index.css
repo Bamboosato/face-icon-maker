@@ -444,6 +444,10 @@ button {
   gap: 8px;
 }
 
+.style-segmented-control {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .compact-segmented-control,
 .pixel-size-slot {
   display: grid;
@@ -451,12 +455,22 @@ button {
   gap: 6px;
 }
 
+.effect-detail-slot {
+  min-height: 42px;
+  display: grid;
+}
+
+.effect-detail-slot > * {
+  grid-area: 1 / 1;
+}
+
 .pixel-size-slot {
   min-height: 40px;
   visibility: hidden;
 }
 
-.pixel-size-slot.visible {
+.pixel-size-slot.visible,
+.paint-strength-slot.visible {
   visibility: visible;
 }
 
@@ -487,6 +501,12 @@ button {
   background: #ffffff;
 }
 
+.style-segmented-control button {
+  gap: 6px;
+  padding: 0 6px;
+  font-size: 0.94rem;
+}
+
 .compact-segmented-control button,
 .pixel-size-slot button {
   min-height: 40px;
@@ -502,6 +522,29 @@ button {
   border-color: #126c5a;
   color: #ffffff;
   background: #126c5a;
+}
+
+.paint-strength-slot {
+  min-height: 40px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) 42px;
+  align-items: center;
+  gap: 8px;
+  color: #52625c;
+  font-size: 0.86rem;
+  visibility: hidden;
+}
+
+.paint-strength-slot input {
+  width: 100%;
+  accent-color: #126c5a;
+}
+
+.paint-strength-slot output {
+  color: #26352f;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  text-align: right;
 }
 
 .background-swatch-row {

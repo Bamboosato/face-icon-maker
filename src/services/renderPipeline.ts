@@ -39,11 +39,20 @@ export async function renderIconToCanvas(
     workCanvas.height,
   );
 
-  if (backgroundOptions.mode !== "original") {
-    await applyBackground(workCanvas, backgroundOptions);
-  }
+  if (backgroundOptions.mode !== "original" && shouldApplyEffectBeforeBackground(effectOptions)) {
+    const personMask = await createBackgroundMask(workCanvas);
+    applyEffect(workCanvas, effectOptions);
 
-  applyEffect(workCanvas, effectOptions);
+    if (personMask) {
+      applyBackgroundWithMask(workCanvas, backgroundOptions, personMask);
+    }
+  } else {
+    if (backgroundOptions.mode !== "original") {
+      await applyBackground(workCanvas, backgroundOptions);
+    }
+
+    applyEffect(workCanvas, effectOptions);
+  }
 
   context.clearRect(0, 0, canvas.width, canvas.height);
   context.save();
@@ -71,24 +80,52 @@ export function loadImage(url: string): Promise<HTMLImageElement> {
 function applyEffect(canvas: HTMLCanvasElement, effectOptions: EffectOptions) {
   if (effectOptions.effect === "pixel-art") {
     applyPixelArt(canvas, effectOptions.pixelSize);
+    return;
   }
+
+  if (effectOptions.effect === "comic") {
+    applyComicEffect(canvas);
+    return;
+  }
+
+  if (effectOptions.effect === "paint") {
+    applyPaintEffect(canvas, effectOptions.paintStrength);
+  }
+}
+
+function shouldApplyEffectBeforeBackground(effectOptions: EffectOptions) {
+  return effectOptions.effect === "comic" || effectOptions.effect === "paint";
 }
 
 async function applyBackground(
   sourceCanvas: HTMLCanvasElement,
   backgroundOptions: BackgroundOptions,
 ) {
-  const sourceContext = sourceCanvas.getContext("2d");
+  const personMask = await createBackgroundMask(sourceCanvas);
 
-  if (!sourceContext) {
+  if (!personMask) {
     return;
   }
 
-  let personMask: SegmentationMask;
+  applyBackgroundWithMask(sourceCanvas, backgroundOptions, personMask);
+}
 
+async function createBackgroundMask(sourceCanvas: HTMLCanvasElement) {
   try {
-    personMask = await createPersonMask(sourceCanvas);
+    return await createPersonMask(sourceCanvas);
   } catch {
+    return undefined;
+  }
+}
+
+function applyBackgroundWithMask(
+  sourceCanvas: HTMLCanvasElement,
+  backgroundOptions: BackgroundOptions,
+  personMask: SegmentationMask,
+) {
+  const sourceContext = sourceCanvas.getContext("2d");
+
+  if (!sourceContext) {
     return;
   }
 
@@ -102,25 +139,27 @@ async function applyBackground(
       const sourceIndex = pixelIndex * 4;
       const maskValue = getMaskValue(personMask, x, y, sourceCanvas.width, sourceCanvas.height);
       const alpha = smoothstep(0.2, 0.78, maskValue);
+      const sourceAlpha = sourceImage.data[sourceIndex + 3] / 255;
+      const personAlpha = alpha * sourceAlpha;
 
       if (backgroundOptions.mode === "transparent") {
         outputImage.data[sourceIndex] = sourceImage.data[sourceIndex];
         outputImage.data[sourceIndex + 1] = sourceImage.data[sourceIndex + 1];
         outputImage.data[sourceIndex + 2] = sourceImage.data[sourceIndex + 2];
-        outputImage.data[sourceIndex + 3] = Math.round(sourceImage.data[sourceIndex + 3] * alpha);
+        outputImage.data[sourceIndex + 3] = Math.round(255 * personAlpha);
         continue;
       }
 
       outputImage.data[sourceIndex] = Math.round(
-        sourceImage.data[sourceIndex] * alpha + backgroundColor.r * (1 - alpha),
+        sourceImage.data[sourceIndex] * personAlpha + backgroundColor.r * (1 - personAlpha),
       );
       outputImage.data[sourceIndex + 1] = Math.round(
-        sourceImage.data[sourceIndex + 1] * alpha + backgroundColor.g * (1 - alpha),
+        sourceImage.data[sourceIndex + 1] * personAlpha + backgroundColor.g * (1 - personAlpha),
       );
       outputImage.data[sourceIndex + 2] = Math.round(
-        sourceImage.data[sourceIndex + 2] * alpha + backgroundColor.b * (1 - alpha),
+        sourceImage.data[sourceIndex + 2] * personAlpha + backgroundColor.b * (1 - personAlpha),
       );
-      outputImage.data[sourceIndex + 3] = sourceImage.data[sourceIndex + 3];
+      outputImage.data[sourceIndex + 3] = 255;
     }
   }
 
@@ -149,6 +188,269 @@ function applyPixelArt(canvas: HTMLCanvasElement, pixelSize: number) {
   context.clearRect(0, 0, canvas.width, canvas.height);
   context.imageSmoothingEnabled = false;
   context.drawImage(pixelCanvas, 0, 0, canvas.width, canvas.height);
+}
+
+function applyComicEffect(canvas: HTMLCanvasElement) {
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    return;
+  }
+
+  const sourceImage = context.getImageData(0, 0, canvas.width, canvas.height);
+  const outputImage = context.createImageData(canvas.width, canvas.height);
+  const grayscale = createGrayscaleMap(sourceImage.data, canvas.width, canvas.height);
+
+  for (let y = 0; y < canvas.height; y++) {
+    for (let x = 0; x < canvas.width; x++) {
+      const pixelIndex = y * canvas.width + x;
+      const sourceIndex = pixelIndex * 4;
+      const alpha = sourceImage.data[sourceIndex + 3];
+
+      if (alpha === 0) {
+        outputImage.data[sourceIndex + 3] = 0;
+        continue;
+      }
+
+      const edgeStrength = getSobelEdgeStrength(grayscale, x, y, canvas.width, canvas.height);
+
+      if (alpha > 48 && edgeStrength > 92) {
+        outputImage.data[sourceIndex] = 22;
+        outputImage.data[sourceIndex + 1] = 29;
+        outputImage.data[sourceIndex + 2] = 31;
+        outputImage.data[sourceIndex + 3] = Math.min(255, Math.round(alpha * 0.96));
+        continue;
+      }
+
+      const color = posterizeColor(
+        sourceImage.data[sourceIndex],
+        sourceImage.data[sourceIndex + 1],
+        sourceImage.data[sourceIndex + 2],
+      );
+
+      outputImage.data[sourceIndex] = color.r;
+      outputImage.data[sourceIndex + 1] = color.g;
+      outputImage.data[sourceIndex + 2] = color.b;
+      outputImage.data[sourceIndex + 3] = alpha;
+    }
+  }
+
+  context.putImageData(outputImage, 0, 0);
+}
+
+function applyPaintEffect(canvas: HTMLCanvasElement, paintStrength: number) {
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    return;
+  }
+
+  const normalizedStrength = clamp(paintStrength, 0, 100) / 100;
+
+  if (normalizedStrength === 0) {
+    return;
+  }
+
+  const sourceImage = context.getImageData(0, 0, canvas.width, canvas.height);
+  const outputImage = context.createImageData(canvas.width, canvas.height);
+  const radius = Math.max(1, Math.round(1 + normalizedStrength * 3));
+  const blendAmount = 0.2 + normalizedStrength * 0.72;
+  const colorLevels = Math.max(7, Math.round(14 - normalizedStrength * 6));
+
+  for (let y = 0; y < canvas.height; y++) {
+    for (let x = 0; x < canvas.width; x++) {
+      const sourceIndex = (y * canvas.width + x) * 4;
+      const alpha = sourceImage.data[sourceIndex + 3];
+
+      if (alpha === 0) {
+        outputImage.data[sourceIndex + 3] = 0;
+        continue;
+      }
+
+      const color = getKuwaharaColor(sourceImage, x, y, radius);
+      const enhancedColor = {
+        r: quantizePaintChannel(color.r, colorLevels, normalizedStrength),
+        g: quantizePaintChannel(color.g, colorLevels, normalizedStrength),
+        b: quantizePaintChannel(color.b, colorLevels, normalizedStrength),
+      };
+
+      outputImage.data[sourceIndex] = Math.round(
+        mix(sourceImage.data[sourceIndex], enhancedColor.r, blendAmount),
+      );
+      outputImage.data[sourceIndex + 1] = Math.round(
+        mix(sourceImage.data[sourceIndex + 1], enhancedColor.g, blendAmount),
+      );
+      outputImage.data[sourceIndex + 2] = Math.round(
+        mix(sourceImage.data[sourceIndex + 2], enhancedColor.b, blendAmount),
+      );
+      outputImage.data[sourceIndex + 3] = alpha;
+    }
+  }
+
+  context.putImageData(outputImage, 0, 0);
+}
+
+function getKuwaharaColor(
+  sourceImage: ImageData,
+  x: number,
+  y: number,
+  radius: number,
+) {
+  const regions = [
+    getRegionStats(sourceImage, x - radius, y - radius, x, y),
+    getRegionStats(sourceImage, x, y - radius, x + radius, y),
+    getRegionStats(sourceImage, x - radius, y, x, y + radius),
+    getRegionStats(sourceImage, x, y, x + radius, y + radius),
+  ];
+
+  return regions.reduce((bestRegion, region) =>
+    region.variance < bestRegion.variance ? region : bestRegion,
+  ).color;
+}
+
+function getRegionStats(
+  sourceImage: ImageData,
+  startX: number,
+  startY: number,
+  endX: number,
+  endY: number,
+) {
+  let redSum = 0;
+  let greenSum = 0;
+  let blueSum = 0;
+  let luminanceSum = 0;
+  let luminanceSquareSum = 0;
+  let count = 0;
+
+  const clampedStartX = Math.max(0, startX);
+  const clampedStartY = Math.max(0, startY);
+  const clampedEndX = Math.min(sourceImage.width - 1, endX);
+  const clampedEndY = Math.min(sourceImage.height - 1, endY);
+
+  for (let y = clampedStartY; y <= clampedEndY; y++) {
+    for (let x = clampedStartX; x <= clampedEndX; x++) {
+      const sourceIndex = (y * sourceImage.width + x) * 4;
+      const red = sourceImage.data[sourceIndex];
+      const green = sourceImage.data[sourceIndex + 1];
+      const blue = sourceImage.data[sourceIndex + 2];
+      const luminance = red * 0.299 + green * 0.587 + blue * 0.114;
+
+      redSum += red;
+      greenSum += green;
+      blueSum += blue;
+      luminanceSum += luminance;
+      luminanceSquareSum += luminance * luminance;
+      count += 1;
+    }
+  }
+
+  if (count === 0) {
+    return {
+      color: { r: 0, g: 0, b: 0 },
+      variance: Number.POSITIVE_INFINITY,
+    };
+  }
+
+  const meanLuminance = luminanceSum / count;
+
+  return {
+    color: {
+      r: redSum / count,
+      g: greenSum / count,
+      b: blueSum / count,
+    },
+    variance: luminanceSquareSum / count - meanLuminance * meanLuminance,
+  };
+}
+
+function createGrayscaleMap(
+  sourceData: Uint8ClampedArray,
+  width: number,
+  height: number,
+) {
+  const grayscale = new Uint8ClampedArray(width * height);
+
+  for (let index = 0; index < grayscale.length; index++) {
+    const sourceIndex = index * 4;
+    const alpha = sourceData[sourceIndex + 3] / 255;
+    const luminance =
+      sourceData[sourceIndex] * 0.299 +
+      sourceData[sourceIndex + 1] * 0.587 +
+      sourceData[sourceIndex + 2] * 0.114;
+
+    grayscale[index] = Math.round(luminance * alpha + 255 * (1 - alpha));
+  }
+
+  return grayscale;
+}
+
+function getSobelEdgeStrength(
+  grayscale: Uint8ClampedArray,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+) {
+  const topLeft = getGrayscaleValue(grayscale, x - 1, y - 1, width, height);
+  const top = getGrayscaleValue(grayscale, x, y - 1, width, height);
+  const topRight = getGrayscaleValue(grayscale, x + 1, y - 1, width, height);
+  const left = getGrayscaleValue(grayscale, x - 1, y, width, height);
+  const right = getGrayscaleValue(grayscale, x + 1, y, width, height);
+  const bottomLeft = getGrayscaleValue(grayscale, x - 1, y + 1, width, height);
+  const bottom = getGrayscaleValue(grayscale, x, y + 1, width, height);
+  const bottomRight = getGrayscaleValue(grayscale, x + 1, y + 1, width, height);
+
+  const gx = -topLeft + topRight - 2 * left + 2 * right - bottomLeft + bottomRight;
+  const gy = -topLeft - 2 * top - topRight + bottomLeft + 2 * bottom + bottomRight;
+
+  return Math.sqrt(gx * gx + gy * gy);
+}
+
+function getGrayscaleValue(
+  grayscale: Uint8ClampedArray,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+) {
+  const clampedX = Math.min(width - 1, Math.max(0, x));
+  const clampedY = Math.min(height - 1, Math.max(0, y));
+
+  return grayscale[clampedY * width + clampedX] ?? 255;
+}
+
+function posterizeColor(red: number, green: number, blue: number) {
+  const luminance = red * 0.299 + green * 0.587 + blue * 0.114;
+
+  return {
+    r: posterizeChannel(luminance + (red - luminance) * 1.35),
+    g: posterizeChannel(luminance + (green - luminance) * 1.35),
+    b: posterizeChannel(luminance + (blue - luminance) * 1.35),
+  };
+}
+
+function posterizeChannel(value: number) {
+  const contrasted = (value - 128) * 1.12 + 132;
+  const clamped = Math.min(255, Math.max(0, contrasted));
+  const levels = 5;
+
+  return Math.round(Math.round((clamped / 255) * (levels - 1)) * (255 / (levels - 1)));
+}
+
+function quantizePaintChannel(value: number, levels: number, strength: number) {
+  const contrast = 1 + strength * 0.18;
+  const contrasted = (value - 128) * contrast + 128;
+  const clamped = clamp(contrasted, 0, 255);
+
+  return Math.round(Math.round((clamped / 255) * (levels - 1)) * (255 / (levels - 1)));
+}
+
+function mix(from: number, to: number, amount: number) {
+  return from * (1 - amount) + to * amount;
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
 }
 
 function createCanvas(width: number, height: number) {
