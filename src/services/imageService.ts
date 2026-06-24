@@ -6,25 +6,25 @@ const MAX_MEGAPIXELS = 50;
 const MAX_DIMENSION = 12000;
 const PROCESSING_MAX_LONG_EDGE = 3000;
 
+type DecodedImageSource = ImageBitmap | HTMLImageElement;
+
 export async function processImageFile(file: File): Promise<ProcessedImage> {
   validateFile(file);
 
+  let source: DecodedImageSource | undefined;
+
   try {
     const orientation = await readExifOrientation(file);
-    const bitmap = await createBitmapWithoutOrientation(file);
-    const sourceWidth = bitmap.width;
-    const sourceHeight = bitmap.height;
-    const rotated = swapsAxes(orientation);
-    const orientedWidth = rotated ? sourceHeight : sourceWidth;
-    const orientedHeight = rotated ? sourceWidth : sourceHeight;
-    const megapixels = (orientedWidth * orientedHeight) / 1_000_000;
+    source = await loadOrientedImageSource(file);
+    const { width: sourceWidth, height: sourceHeight } =
+      getSourceDimensions(source);
+    const megapixels = (sourceWidth * sourceHeight) / 1_000_000;
 
     if (
       megapixels >= MAX_MEGAPIXELS ||
-      orientedWidth >= MAX_DIMENSION ||
-      orientedHeight >= MAX_DIMENSION
+      sourceWidth >= MAX_DIMENSION ||
+      sourceHeight >= MAX_DIMENSION
     ) {
-      bitmap.close();
       throw new ImageProcessingError(
         "dimensions-too-large",
         "Image is too large. Try another image.",
@@ -33,23 +33,21 @@ export async function processImageFile(file: File): Promise<ProcessedImage> {
 
     const scale = Math.min(
       1,
-      PROCESSING_MAX_LONG_EDGE / Math.max(orientedWidth, orientedHeight),
+      PROCESSING_MAX_LONG_EDGE / Math.max(sourceWidth, sourceHeight),
     );
     const canvas = document.createElement("canvas");
-    canvas.width = Math.max(1, Math.round(orientedWidth * scale));
-    canvas.height = Math.max(1, Math.round(orientedHeight * scale));
+    canvas.width = Math.max(1, Math.round(sourceWidth * scale));
+    canvas.height = Math.max(1, Math.round(sourceHeight * scale));
 
     const context = canvas.getContext("2d");
     if (!context) {
-      bitmap.close();
       throw new ImageProcessingError(
         "load-failed",
         "Could not load image. Try another image.",
       );
     }
 
-    drawWithOrientation(context, bitmap, orientation, scale);
-    bitmap.close();
+    drawScaledImage(context, source, scale);
 
     const blob = await canvasToBlob(canvas);
 
@@ -71,6 +69,10 @@ export async function processImageFile(file: File): Promise<ProcessedImage> {
       "load-failed",
       "Could not load image. Try another image.",
     );
+  } finally {
+    if (source) {
+      closeImageSource(source);
+    }
   }
 }
 
@@ -93,65 +95,73 @@ function validateFile(file: File) {
   }
 }
 
-async function createBitmapWithoutOrientation(file: File): Promise<ImageBitmap> {
-  try {
-    return await createImageBitmap(file, { imageOrientation: "none" });
-  } catch {
-    return createImageBitmap(file);
+async function loadOrientedImageSource(
+  file: File,
+): Promise<DecodedImageSource> {
+  if (typeof createImageBitmap === "function") {
+    try {
+      return await createImageBitmap(file, { imageOrientation: "from-image" });
+    } catch {
+      // Fall through to the HTMLImageElement path for browsers with partial support.
+    }
+  }
+
+  return loadHtmlImage(file);
+}
+
+function loadHtmlImage(file: File): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const image = new Image();
+
+    image.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve(image);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(
+        new ImageProcessingError(
+          "load-failed",
+          "Could not load image. Try another image.",
+        ),
+      );
+    };
+    image.src = url;
+  });
+}
+
+function getSourceDimensions(source: DecodedImageSource): {
+  width: number;
+  height: number;
+} {
+  if ("naturalWidth" in source) {
+    return {
+      width: source.naturalWidth,
+      height: source.naturalHeight,
+    };
+  }
+
+  return {
+    width: source.width,
+    height: source.height,
+  };
+}
+
+function closeImageSource(source: DecodedImageSource) {
+  if ("close" in source) {
+    source.close();
   }
 }
 
-function swapsAxes(orientation: number): boolean {
-  return orientation >= 5 && orientation <= 8;
-}
-
-function drawWithOrientation(
+function drawScaledImage(
   context: CanvasRenderingContext2D,
-  bitmap: ImageBitmap,
-  orientation: number,
+  source: DecodedImageSource,
   scale: number,
 ) {
-  const width = bitmap.width;
-  const height = bitmap.height;
-
   context.save();
   context.scale(scale, scale);
-
-  switch (orientation) {
-    case 2:
-      context.translate(width, 0);
-      context.scale(-1, 1);
-      break;
-    case 3:
-      context.translate(width, height);
-      context.rotate(Math.PI);
-      break;
-    case 4:
-      context.translate(0, height);
-      context.scale(1, -1);
-      break;
-    case 5:
-      context.rotate(0.5 * Math.PI);
-      context.scale(1, -1);
-      break;
-    case 6:
-      context.rotate(0.5 * Math.PI);
-      context.translate(0, -height);
-      break;
-    case 7:
-      context.rotate(0.5 * Math.PI);
-      context.translate(width, -height);
-      context.scale(-1, 1);
-      break;
-    case 8:
-      context.rotate(-0.5 * Math.PI);
-      context.translate(-width, 0);
-      break;
-    default:
-      break;
-  }
-
-  context.drawImage(bitmap, 0, 0);
+  context.drawImage(source, 0, 0);
   context.restore();
 }
 
