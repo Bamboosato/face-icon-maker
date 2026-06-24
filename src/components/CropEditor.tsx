@@ -1,4 +1,4 @@
-import { Check, Circle, Grid2x2, Palette, Square } from "lucide-react";
+import { Brush, Check, Circle, Grid2x2, Palette, Sparkles, Square } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import ReactCrop, { type Crop as ReactCropValue } from "react-image-crop";
 import { clampCropToImage } from "../services/cropService";
@@ -8,7 +8,14 @@ import {
   type BackgroundOptions,
 } from "../types/background";
 import type { CropArea, IconShape } from "../types/crop";
-import type { EffectOptions, IconEffect, PixelArtSize } from "../types/effect";
+import {
+  PAINT_STRENGTH_MAX,
+  PAINT_STRENGTH_MIN,
+  PAINT_STRENGTH_STEP,
+  type EffectOptions,
+  type IconEffect,
+  type PixelArtSize,
+} from "../types/effect";
 import type { ProcessedImage } from "../types/image";
 import { IconPreview } from "./IconPreview";
 import { ScreenToolbar } from "./FaceSelector";
@@ -61,6 +68,10 @@ export function CropEditor({
 
   function handlePixelSizeChange(pixelSize: PixelArtSize) {
     onEffectOptionsChange({ ...effectOptions, pixelSize });
+  }
+
+  function handlePaintStrengthChange(paintStrength: number) {
+    onEffectOptionsChange({ ...effectOptions, paintStrength });
   }
 
   function handleBackgroundModeChange(mode: BackgroundMode) {
@@ -131,7 +142,11 @@ export function CropEditor({
 
           <div className="control-group">
             <h3>Style</h3>
-            <div className="segmented-control" role="group" aria-label="Icon style">
+            <div
+              className="segmented-control style-segmented-control"
+              role="group"
+              aria-label="Icon style"
+            >
               <button
                 type="button"
                 className={effectOptions.effect === "none" ? "selected" : ""}
@@ -150,26 +165,69 @@ export function CropEditor({
                 <Grid2x2 size={18} aria-hidden="true" />
                 <span>Pixel</span>
               </button>
+              <button
+                type="button"
+                className={effectOptions.effect === "comic" ? "selected" : ""}
+                onClick={() => handleEffectChange("comic")}
+                aria-pressed={effectOptions.effect === "comic"}
+              >
+                <Sparkles size={18} aria-hidden="true" />
+                <span>Comic</span>
+              </button>
+              <button
+                type="button"
+                className={effectOptions.effect === "paint" ? "selected" : ""}
+                onClick={() => handleEffectChange("paint")}
+                aria-pressed={effectOptions.effect === "paint"}
+              >
+                <Brush size={18} aria-hidden="true" />
+                <span>Paint</span>
+              </button>
             </div>
-            <div
-              className={`pixel-size-slot ${effectOptions.effect === "pixel-art" ? "visible" : ""}`}
-              role="group"
-              aria-label="Pixel size"
-              aria-hidden={effectOptions.effect !== "pixel-art"}
-            >
-              {PIXEL_SIZE_OPTIONS.map((option) => (
-                <button
-                  type="button"
-                  key={option.value}
-                  className={effectOptions.pixelSize === option.value ? "selected" : ""}
-                  disabled={effectOptions.effect !== "pixel-art"}
-                  onClick={() => handlePixelSizeChange(option.value)}
-                  aria-pressed={effectOptions.pixelSize === option.value}
-                  tabIndex={effectOptions.effect === "pixel-art" ? 0 : -1}
-                >
-                  {option.label}
-                </button>
-              ))}
+            <div className="effect-detail-slot">
+              <div
+                className={`pixel-size-slot ${
+                  effectOptions.effect === "pixel-art" ? "visible" : ""
+                }`}
+                role="group"
+                aria-label="Pixel size"
+                aria-hidden={effectOptions.effect !== "pixel-art"}
+              >
+                {PIXEL_SIZE_OPTIONS.map((option) => (
+                  <button
+                    type="button"
+                    key={option.value}
+                    className={effectOptions.pixelSize === option.value ? "selected" : ""}
+                    disabled={effectOptions.effect !== "pixel-art"}
+                    onClick={() => handlePixelSizeChange(option.value)}
+                    aria-pressed={effectOptions.pixelSize === option.value}
+                    tabIndex={effectOptions.effect === "pixel-art" ? 0 : -1}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+              <label
+                className={`paint-strength-slot ${
+                  effectOptions.effect === "paint" ? "visible" : ""
+                }`}
+                aria-hidden={effectOptions.effect !== "paint"}
+              >
+                <span>Strength</span>
+                <input
+                  type="range"
+                  min={PAINT_STRENGTH_MIN}
+                  max={PAINT_STRENGTH_MAX}
+                  step={PAINT_STRENGTH_STEP}
+                  value={effectOptions.paintStrength}
+                  disabled={effectOptions.effect !== "paint"}
+                  tabIndex={effectOptions.effect === "paint" ? 0 : -1}
+                  onChange={(event) =>
+                    handlePaintStrengthChange(event.currentTarget.valueAsNumber)
+                  }
+                />
+                <output>{effectOptions.paintStrength}</output>
+              </label>
             </div>
           </div>
 
