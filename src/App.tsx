@@ -1,5 +1,5 @@
 import { AlertTriangle, Loader2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { CropEditor } from "./components/CropEditor";
 import { DownloadPanel } from "./components/DownloadPanel";
 import { FaceSelector } from "./components/FaceSelector";
@@ -7,7 +7,12 @@ import { UploadArea } from "./components/UploadArea";
 import { createAutoCrop } from "./services/cropService";
 import { detectFaces } from "./services/faceDetection";
 import { processImageFile } from "./services/imageService";
+import {
+  DEFAULT_BACKGROUND_OPTIONS,
+  type BackgroundOptions,
+} from "./types/background";
 import type { CropArea, IconShape } from "./types/crop";
+import { DEFAULT_EFFECT_OPTIONS, type EffectOptions } from "./types/effect";
 import type { FaceBox } from "./types/face";
 import { ImageProcessingError, type ProcessedImage } from "./types/image";
 
@@ -25,9 +30,15 @@ function App() {
   const [selectedFace, setSelectedFace] = useState<FaceBox | null>(null);
   const [crop, setCrop] = useState<CropArea | null>(null);
   const [shape, setShape] = useState<IconShape>("square");
+  const [effectOptions, setEffectOptions] = useState<EffectOptions>(DEFAULT_EFFECT_OPTIONS);
+  const [backgroundOptions, setBackgroundOptions] =
+    useState<BackgroundOptions>(DEFAULT_BACKGROUND_OPTIONS);
   const [detectionThreshold, setDetectionThreshold] = useState(DEFAULT_DETECTION_THRESHOLD);
   const [busyMessage, setBusyMessage] = useState("");
+  const [backgroundProcessingCount, setBackgroundProcessingCount] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
+  const visibleBusyMessage =
+    busyMessage || (backgroundProcessingCount > 0 ? "Processing background" : "");
 
   useEffect(() => {
     return () => {
@@ -73,6 +84,9 @@ function App() {
       setSelectedFace(null);
       setCrop(null);
       setShape("square");
+      setEffectOptions(DEFAULT_EFFECT_OPTIONS);
+      setBackgroundOptions(DEFAULT_BACKGROUND_OPTIONS);
+      setBackgroundProcessingCount(0);
 
       await runFaceDetection(processedImage, detectionThreshold);
     } catch (error) {
@@ -149,18 +163,27 @@ function App() {
     setSelectedFace(null);
     setCrop(null);
     setShape("square");
+    setEffectOptions(DEFAULT_EFFECT_OPTIONS);
+    setBackgroundOptions(DEFAULT_BACKGROUND_OPTIONS);
+    setBackgroundProcessingCount(0);
     setErrorMessage("");
     setBusyMessage("");
     setScreen("upload");
   }
 
+  const handleBackgroundProcessingChange = useCallback((isProcessing: boolean) => {
+    setBackgroundProcessingCount((currentCount) =>
+      Math.max(0, currentCount + (isProcessing ? 1 : -1)),
+    );
+  }, []);
+
   return (
     <main className="app-shell">
       <div className="app-container">
-        {errorMessage || busyMessage ? (
+        {errorMessage || visibleBusyMessage ? (
           <div className="toast-stack" aria-live="polite">
             {errorMessage ? <StatusMessage tone="error" message={errorMessage} /> : null}
-            {busyMessage ? <BusyMessage message={busyMessage} /> : null}
+            {visibleBusyMessage ? <BusyMessage message={visibleBusyMessage} /> : null}
           </div>
         ) : null}
 
@@ -196,11 +219,16 @@ function App() {
         {screen === "edit" && image && selectedFace && crop ? (
           <CropEditor
             image={image}
+            backgroundOptions={backgroundOptions}
             crop={crop}
+            effectOptions={effectOptions}
             shape={shape}
             onBack={() => setScreen("select")}
+            onBackgroundOptionsChange={setBackgroundOptions}
+            onBackgroundProcessingChange={handleBackgroundProcessingChange}
             onComplete={() => setScreen("download")}
             onCropChange={setCrop}
+            onEffectOptionsChange={setEffectOptions}
             onShapeChange={setShape}
           />
         ) : null}
@@ -208,8 +236,11 @@ function App() {
         {screen === "download" && image && crop ? (
           <DownloadPanel
             image={image}
+            backgroundOptions={backgroundOptions}
             crop={crop}
+            effectOptions={effectOptions}
             shape={shape}
+            onBackgroundProcessingChange={handleBackgroundProcessingChange}
             onEdit={() => setScreen("edit")}
             onReset={handleReset}
           />

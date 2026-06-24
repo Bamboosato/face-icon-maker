@@ -5,7 +5,7 @@ import {
 } from "@mediapipe/tasks-vision";
 import type { FaceBox } from "../types/face";
 import type { ProcessedImage } from "../types/image";
-import { loadImage } from "./exportService";
+import { loadImage } from "./renderPipeline";
 
 const TASKS_VERSION = "0.10.35";
 const WASM_URL = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${TASKS_VERSION}/wasm`;

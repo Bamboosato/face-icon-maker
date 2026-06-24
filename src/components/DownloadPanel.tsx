@@ -1,57 +1,79 @@
-import { Download, RotateCcw, SlidersHorizontal, Upload } from "lucide-react";
+import { Download, RotateCcw, SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
+import { useIsSmartphone } from "../hooks/useIsSmartphone";
 import { downloadIcon, shareIcon } from "../services/exportService";
+import type { BackgroundOptions } from "../types/background";
 import type { CropArea, IconShape } from "../types/crop";
+import type { EffectOptions } from "../types/effect";
 import type { ProcessedImage } from "../types/image";
 import { buildDownloadFileName } from "../utils/fileName";
 import { IconPreview } from "./IconPreview";
 
 interface DownloadPanelProps {
+  backgroundOptions: BackgroundOptions;
   crop: CropArea;
+  effectOptions: EffectOptions;
   image: ProcessedImage;
   shape: IconShape;
+  onBackgroundProcessingChange: (isProcessing: boolean) => void;
   onEdit: () => void;
   onReset: () => void;
 }
 
-export function DownloadPanel({ image, crop, shape, onEdit, onReset }: DownloadPanelProps) {
-  const [saving, setSaving] = useState(false);
-  const [sharing, setSharing] = useState(false);
+export function DownloadPanel({
+  image,
+  backgroundOptions,
+  crop,
+  effectOptions,
+  shape,
+  onBackgroundProcessingChange,
+  onEdit,
+  onReset,
+}: DownloadPanelProps) {
+  const isSmartphone = useIsSmartphone();
+  const [processing, setProcessing] = useState(false);
+  const primaryLabel = processing
+    ? isSmartphone
+      ? "Sharing"
+      : "Saving"
+    : isSmartphone
+      ? "Share PNG"
+      : "Save PNG";
 
-  async function handleDownload() {
+  async function handlePrimaryAction() {
     try {
-      setSaving(true);
-      await downloadIcon(image, crop, shape);
-    } finally {
-      setSaving(false);
-    }
-  }
+      setProcessing(true);
+      if (backgroundOptions.mode !== "original") {
+        onBackgroundProcessingChange(true);
+      }
 
-  async function handleShare() {
-    try {
-      setSharing(true);
-      await shareIcon(image, crop, shape);
+      if (isSmartphone) {
+        await shareIcon(image, crop, shape, effectOptions, backgroundOptions);
+        return;
+      }
+
+      await downloadIcon(image, crop, shape, effectOptions, backgroundOptions);
     } finally {
-      setSharing(false);
+      if (backgroundOptions.mode !== "original") {
+        onBackgroundProcessingChange(false);
+      }
+
+      setProcessing(false);
     }
   }
 
   return (
     <section className="download-surface" aria-labelledby="download-title">
       <div className="download-main">
-        <div className="download-title-row">
-          <h1 id="download-title">Done</h1>
-          <button
-            type="button"
-            className="icon-button share-button"
-            disabled={saving || sharing}
-            onClick={handleShare}
-            aria-label="Share PNG"
-          >
-            <Upload size={22} aria-hidden="true" />
-          </button>
-        </div>
-        <IconPreview image={image} crop={crop} shape={shape} />
+        <h1 id="download-title">Done</h1>
+        <IconPreview
+          image={image}
+          backgroundOptions={backgroundOptions}
+          crop={crop}
+          effectOptions={effectOptions}
+          shape={shape}
+          onBackgroundProcessingChange={onBackgroundProcessingChange}
+        />
         <p className="file-name">{buildDownloadFileName(image.originalName)}</p>
       </div>
 
@@ -59,11 +81,11 @@ export function DownloadPanel({ image, crop, shape, onEdit, onReset }: DownloadP
         <button
           type="button"
           className="primary-action"
-          disabled={saving || sharing}
-          onClick={handleDownload}
+          disabled={processing}
+          onClick={handlePrimaryAction}
         >
-          <Download size={19} aria-hidden="true" />
-          {saving ? "Saving" : "Save PNG"}
+          {!isSmartphone && <Download size={19} aria-hidden="true" />}
+          {primaryLabel}
         </button>
         <button type="button" className="secondary-action" onClick={onEdit}>
           <SlidersHorizontal size={18} aria-hidden="true" />

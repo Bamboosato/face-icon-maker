@@ -1,6 +1,9 @@
 import type { CropArea, IconShape } from "../types/crop";
+import { DEFAULT_EFFECT_OPTIONS, type EffectOptions } from "../types/effect";
+import { DEFAULT_BACKGROUND_OPTIONS, type BackgroundOptions } from "../types/background";
 import type { ProcessedImage } from "../types/image";
 import { buildDownloadFileName } from "../utils/fileName";
+import { loadImage, renderIconToCanvas } from "./renderPipeline";
 
 const EXPORT_SIZE = 512;
 
@@ -8,8 +11,10 @@ export async function downloadIcon(
   image: ProcessedImage,
   crop: CropArea,
   shape: IconShape,
+  effectOptions: EffectOptions = DEFAULT_EFFECT_OPTIONS,
+  backgroundOptions: BackgroundOptions = DEFAULT_BACKGROUND_OPTIONS,
 ) {
-  const blob = await createIconPngBlob(image, crop, shape);
+  const blob = await createIconPngBlob(image, crop, shape, effectOptions, backgroundOptions);
   saveBlob(blob, buildDownloadFileName(image.originalName));
 }
 
@@ -17,8 +22,10 @@ export async function shareIcon(
   image: ProcessedImage,
   crop: CropArea,
   shape: IconShape,
+  effectOptions: EffectOptions = DEFAULT_EFFECT_OPTIONS,
+  backgroundOptions: BackgroundOptions = DEFAULT_BACKGROUND_OPTIONS,
 ) {
-  const blob = await createIconPngBlob(image, crop, shape);
+  const blob = await createIconPngBlob(image, crop, shape, effectOptions, backgroundOptions);
   const fileName = buildDownloadFileName(image.originalName);
   const file = new File([blob], fileName, { type: "image/png" });
 
@@ -43,13 +50,15 @@ async function createIconPngBlob(
   image: ProcessedImage,
   crop: CropArea,
   shape: IconShape,
+  effectOptions: EffectOptions,
+  backgroundOptions: BackgroundOptions,
 ) {
   const source = await loadImage(image.url);
   const canvas = document.createElement("canvas");
   canvas.width = EXPORT_SIZE;
   canvas.height = EXPORT_SIZE;
 
-  renderIconToCanvas(canvas, source, crop, shape);
+  await renderIconToCanvas(canvas, source, crop, shape, effectOptions, backgroundOptions);
 
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob((result) => {
@@ -72,51 +81,4 @@ function saveBlob(blob: Blob, fileName: string) {
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
-}
-
-export function renderIconToCanvas(
-  canvas: HTMLCanvasElement,
-  source: CanvasImageSource,
-  crop: CropArea,
-  shape: IconShape,
-) {
-  const context = canvas.getContext("2d");
-
-  if (!context) {
-    return;
-  }
-
-  context.clearRect(0, 0, canvas.width, canvas.height);
-  context.imageSmoothingEnabled = true;
-  context.imageSmoothingQuality = "high";
-  context.save();
-
-  if (shape === "circle") {
-    context.beginPath();
-    context.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2, 0, Math.PI * 2);
-    context.clip();
-  }
-
-  context.drawImage(
-    source,
-    crop.x,
-    crop.y,
-    crop.width,
-    crop.height,
-    0,
-    0,
-    canvas.width,
-    canvas.height,
-  );
-
-  context.restore();
-}
-
-export function loadImage(url: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error("Could not load image."));
-    image.src = url;
-  });
 }

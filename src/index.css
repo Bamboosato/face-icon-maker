@@ -278,7 +278,8 @@ button {
 
 .counter-row h2,
 .crop-panel h2,
-.preview-panel h2 {
+.preview-panel h2,
+.control-group h3 {
   margin: 0;
   font-size: 1rem;
 }
@@ -432,20 +433,42 @@ button {
   border-radius: 999px;
 }
 
+.control-group {
+  display: grid;
+  gap: 8px;
+}
+
 .segmented-control {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
 
+.compact-segmented-control,
+.pixel-size-slot {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.pixel-size-slot {
+  min-height: 40px;
+  visibility: hidden;
+}
+
+.pixel-size-slot.visible {
+  visibility: visible;
+}
+
 .completion-actions {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 48px;
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
-  gap: 8px;
 }
 
 .segmented-control button,
+.compact-segmented-control button,
+.pixel-size-slot button,
 .primary-action,
 .secondary-action {
   min-height: 48px;
@@ -464,10 +487,45 @@ button {
   background: #ffffff;
 }
 
-.segmented-control button.selected {
+.compact-segmented-control button,
+.pixel-size-slot button {
+  min-height: 40px;
+  border: 1px solid #d4ddd8;
+  color: #26352f;
+  background: #ffffff;
+  font-size: 0.86rem;
+}
+
+.segmented-control button.selected,
+.compact-segmented-control button.selected,
+.pixel-size-slot button.selected {
   border-color: #126c5a;
   color: #ffffff;
   background: #126c5a;
+}
+
+.background-swatch-row {
+  min-height: 36px;
+  display: flex;
+  gap: 8px;
+  visibility: hidden;
+}
+
+.background-swatch-row.visible {
+  visibility: visible;
+}
+
+.background-swatch-row button {
+  width: 36px;
+  height: 36px;
+  border: 2px solid #d4ddd8;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.background-swatch-row button.selected {
+  border-color: #126c5a;
+  box-shadow: 0 0 0 2px rgba(18, 108, 90, 0.18);
 }
 
 .primary-action {
@@ -499,17 +557,6 @@ button {
   flex-direction: column;
   align-items: center;
   gap: 14px;
-}
-
-.download-title-row {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.share-button {
-  width: 40px;
-  height: 40px;
 }
 
 .file-name {
