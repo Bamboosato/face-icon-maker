@@ -10,3 +10,4 @@ face-icon-maker-*.png
 
 test-assets/manual/*
 !test-assets/manual/.gitkeep
+.vercel

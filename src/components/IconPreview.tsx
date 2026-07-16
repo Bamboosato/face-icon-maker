@@ -4,6 +4,7 @@ import { DEFAULT_BACKGROUND_OPTIONS, type BackgroundOptions } from "../types/bac
 import type { CropArea, IconShape } from "../types/crop";
 import { DEFAULT_EFFECT_OPTIONS, type EffectOptions } from "../types/effect";
 import type { ProcessedImage } from "../types/image";
+import type { SegmentationAnchor } from "../services/segmentationService";
 
 interface IconPreviewProps {
   backgroundOptions?: BackgroundOptions;
@@ -11,6 +12,7 @@ interface IconPreviewProps {
   effectOptions?: EffectOptions;
   image: ProcessedImage;
   shape: IconShape;
+  subjectAnchor?: SegmentationAnchor;
   onBackgroundProcessingChange?: (isProcessing: boolean) => void;
 }
 
@@ -20,6 +22,7 @@ export function IconPreview({
   crop,
   effectOptions = DEFAULT_EFFECT_OPTIONS,
   shape,
+  subjectAnchor,
   onBackgroundProcessingChange,
 }: IconPreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -56,7 +59,15 @@ export function IconPreview({
         nextCanvas.width = canvas.width;
         nextCanvas.height = canvas.height;
 
-        await renderIconToCanvas(nextCanvas, source, crop, shape, effectOptions, backgroundOptions);
+        await renderIconToCanvas(
+          nextCanvas,
+          source,
+          crop,
+          shape,
+          effectOptions,
+          backgroundOptions,
+          subjectAnchor,
+        );
 
         if (cancelled) {
           return;
@@ -76,7 +87,15 @@ export function IconPreview({
       cancelled = true;
       setBackgroundProcessing(false);
     };
-  }, [backgroundOptions, crop, effectOptions, image.url, onBackgroundProcessingChange, shape]);
+  }, [
+    backgroundOptions,
+    crop,
+    effectOptions,
+    image.url,
+    onBackgroundProcessingChange,
+    shape,
+    subjectAnchor,
+  ]);
 
   return (
     <div className={`preview-canvas ${shape === "circle" ? "circle-preview" : ""}`}>

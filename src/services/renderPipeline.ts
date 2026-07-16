@@ -1,7 +1,15 @@
 import type { CropArea, IconShape } from "../types/crop";
 import { DEFAULT_EFFECT_OPTIONS, type EffectOptions } from "../types/effect";
 import { DEFAULT_BACKGROUND_OPTIONS, type BackgroundOptions } from "../types/background";
-import { createPersonMask, type SegmentationMask } from "./segmentationService";
+import {
+  createPersonMask,
+  SELECTED_OBJECT_MASK_THRESHOLD,
+  type SegmentationAnchor,
+  type SegmentationMask,
+} from "./segmentationService";
+
+const PERSON_MASK_FADE_START = SELECTED_OBJECT_MASK_THRESHOLD;
+const PERSON_MASK_FADE_END = 0.85;
 
 export async function renderIconToCanvas(
   canvas: HTMLCanvasElement,
@@ -10,6 +18,7 @@ export async function renderIconToCanvas(
   shape: IconShape,
   effectOptions: EffectOptions = DEFAULT_EFFECT_OPTIONS,
   backgroundOptions: BackgroundOptions = DEFAULT_BACKGROUND_OPTIONS,
+  subjectAnchor?: SegmentationAnchor,
 ) {
   const context = canvas.getContext("2d");
 
@@ -40,7 +49,7 @@ export async function renderIconToCanvas(
   );
 
   if (backgroundOptions.mode !== "original" && shouldApplyEffectBeforeBackground(effectOptions)) {
-    const personMask = await createBackgroundMask(workCanvas);
+    const personMask = await createBackgroundMask(workCanvas, subjectAnchor);
     applyEffect(workCanvas, effectOptions);
 
     if (personMask) {
@@ -48,7 +57,7 @@ export async function renderIconToCanvas(
     }
   } else {
     if (backgroundOptions.mode !== "original") {
-      await applyBackground(workCanvas, backgroundOptions);
+      await applyBackground(workCanvas, backgroundOptions, subjectAnchor);
     }
 
     applyEffect(workCanvas, effectOptions);
@@ -100,8 +109,9 @@ function shouldApplyEffectBeforeBackground(effectOptions: EffectOptions) {
 async function applyBackground(
   sourceCanvas: HTMLCanvasElement,
   backgroundOptions: BackgroundOptions,
+  subjectAnchor?: SegmentationAnchor,
 ) {
-  const personMask = await createBackgroundMask(sourceCanvas);
+  const personMask = await createBackgroundMask(sourceCanvas, subjectAnchor);
 
   if (!personMask) {
     return;
@@ -110,9 +120,12 @@ async function applyBackground(
   applyBackgroundWithMask(sourceCanvas, backgroundOptions, personMask);
 }
 
-async function createBackgroundMask(sourceCanvas: HTMLCanvasElement) {
+async function createBackgroundMask(
+  sourceCanvas: HTMLCanvasElement,
+  subjectAnchor?: SegmentationAnchor,
+) {
   try {
-    return await createPersonMask(sourceCanvas);
+    return await createPersonMask(sourceCanvas, subjectAnchor);
   } catch {
     return undefined;
   }
@@ -138,7 +151,7 @@ function applyBackgroundWithMask(
       const pixelIndex = y * sourceCanvas.width + x;
       const sourceIndex = pixelIndex * 4;
       const maskValue = getMaskValue(personMask, x, y, sourceCanvas.width, sourceCanvas.height);
-      const alpha = smoothstep(0.2, 0.78, maskValue);
+      const alpha = smoothstep(PERSON_MASK_FADE_START, PERSON_MASK_FADE_END, maskValue);
       const sourceAlpha = sourceImage.data[sourceIndex + 3] / 255;
       const personAlpha = alpha * sourceAlpha;
 

@@ -223,6 +223,7 @@ function App() {
             crop={crop}
             effectOptions={effectOptions}
             shape={shape}
+            selectedFace={selectedFace}
             onBack={() => setScreen("select")}
             onBackgroundOptionsChange={setBackgroundOptions}
             onBackgroundProcessingChange={handleBackgroundProcessingChange}
@@ -233,13 +234,14 @@ function App() {
           />
         ) : null}
 
-        {screen === "download" && image && crop ? (
+        {screen === "download" && image && selectedFace && crop ? (
           <DownloadPanel
             image={image}
             backgroundOptions={backgroundOptions}
             crop={crop}
             effectOptions={effectOptions}
             shape={shape}
+            selectedFace={selectedFace}
             onBackgroundProcessingChange={handleBackgroundProcessingChange}
             onEdit={() => setScreen("edit")}
             onReset={handleReset}
