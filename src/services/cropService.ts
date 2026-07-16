@@ -1,6 +1,7 @@
 import type { CropArea } from "../types/crop";
 import type { FaceBox } from "../types/face";
 import type { ProcessedImage } from "../types/image";
+import type { SegmentationAnchor } from "./segmentationService";
 
 const FACE_MARGIN_SCALE = 2.2;
 const MIN_CROP_SIZE = 96;
@@ -36,6 +37,16 @@ export function clampCropToImage(crop: CropArea, image: ProcessedImage): CropAre
     y,
     width: size,
     height: size,
+  };
+}
+
+export function createSegmentationAnchor(
+  face: FaceBox,
+  crop: CropArea,
+): SegmentationAnchor {
+  return {
+    x: clamp((face.x + face.width / 2 - crop.x) / crop.width, 0, 1),
+    y: clamp((face.y + face.height / 2 - crop.y) / crop.height, 0, 1),
   };
 }
 

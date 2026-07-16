@@ -1,24 +1,98 @@
 # Face Icon Maker
 
-Create profile icons from group photos directly in your browser.
+集合写真から顔を選び、プロフィール用PNGアイコンを作るブラウザ完結型アプリです。写真はサーバーへ送信せず、顔検出・切り抜き・背景除去・超解像・画像生成を端末内で処理します。
 
-## Features
+本番版: [https://face-icon-maker.vercel.app](https://face-icon-maker.vercel.app)
 
-- Detect multiple faces in a photo
-- Select a face with a single click
-- Auto-crop for profile icons
-- Square and circular icon support
-- No server-side image processing
-- Privacy-friendly (all processing runs locally)
+## 主な機能
 
-## Tech Stack
+- JPEG / PNGの集合写真を読み込み、複数の顔を自動検出
+- 検出枠から任意の顔を選択し、顔の周囲を含めて自動切り抜き
+- 1:1の範囲で位置・拡大率を調整
+- 四角形 / 円形アイコン
+- 通常 / ピクセル / コミック / ペイントのスタイル
+- 元背景 / 透明背景 / 単色背景
+- 選択した顔を起点にした背景除去と、汎用人物セグメンテーションへのフォールバック
+- 低解像度の顔に対する任意の4倍超解像
+- 512 × 512ピクセルのPNG保存・共有
 
-- React
-- TypeScript
-- Vite
-- MediaPipe Face Detection
+## 基本フロー
+
+1. 集合写真を選ぶ
+2. 検出された顔を選ぶ
+3. 必要な場合だけ切り抜き・形・背景・スタイルを調整する
+4. PNGを保存または共有する
+
+目標は、この一連の操作を30秒以内で完了できることです。
+
+## 超解像について
+
+超解像は、切り抜き元が512ピクセル未満の場合に利用できます。256ピクセル未満では利用を推奨表示します。
+
+- Real-ESRGAN x4を使い、切り抜いた顔画像を中間的に縦横4倍へ復元
+- 超解像後の画像を使って背景除去とエフェクトを実行
+- 最終PNGは常に512 × 512ピクセル
+- WebGPUを優先し、利用できない環境ではWASMへフォールバック
+- モデルは初回利用時だけ遅延読み込み
+- 失敗時は通常処理に戻して保存可能
+
+「4倍」は最終ファイルの寸法ではなく、モデル内部の復元倍率です。
+
+## プライバシーとネットワーク
+
+選択した写真や生成画像をアプリのサーバーへアップロードしません。処理はブラウザ内で完結します。
+
+初回利用時には、顔検出・背景除去・超解像に必要なモデルやランタイムを配信元から取得するため、ネットワーク接続が必要です。取得後の再利用可否はブラウザのキャッシュ状態に依存します。
+
+## 入力条件
+
+- 形式: JPEG / PNG
+- ファイルサイズ: 50 MB未満
+- 画素数: 50メガピクセル未満
+- 一辺: 12,000ピクセル未満
+- 処理時は長辺最大3,000ピクセルへ縮小
+
+## 開発
+
+前提: Node.js 20以降を推奨します。
+
+```bash
+npm install
+npm run dev
+```
+
+主なコマンド:
+
+```bash
+npm test
+npm run build
+```
+
+超解像モデルなどの設定は [`.env.example`](.env.example) を参照してください。LiteRTのWASMはビルド時に `/litert/wasm/` へコピーされます。
+
+## 技術構成
+
+- React / TypeScript / Vite
+- Tailwind CSS
+- MediaPipe Face Detector
+- MediaPipe Interactive Segmenter（MagicTouch）
+- MediaPipe Selfie Segmenter（フォールバック）
+- LiteRT.js / Real-ESRGAN x4
 - HTML5 Canvas
 
-## MVP Goal
+バックエンド、データベース、ユーザーアカウント、有料APIは使用しません。
 
-Upload a group photo → Select a face → Download a profile icon
+## ドキュメント
+
+- [要件](docs/requirements.md)
+- [アーキテクチャ](docs/architecture.md)
+- [画面遷移](docs/screen-flow.md)
+- [実装・検証タスク](docs/tasks-mvp.md)
+- [超解像の導入・検証記録](docs/super-resolution-feasibility.md)
+
+## 確認済み環境
+
+- デスクトップ版Chrome
+- iPhone 13 Pro Max（超解像を含む保存処理を実機確認）
+
+端末性能、OS、ブラウザ、ネットワーク状態により、モデルの初回読み込み時間と超解像の処理時間は変動します。

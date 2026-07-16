@@ -4,8 +4,25 @@ import { DEFAULT_BACKGROUND_OPTIONS, type BackgroundOptions } from "../types/bac
 import type { ProcessedImage } from "../types/image";
 import { buildDownloadFileName } from "../utils/fileName";
 import { loadImage, renderIconToCanvas } from "./renderPipeline";
+import {
+  upscaleFaceCrop,
+  type SuperResolutionProgress,
+} from "./superResolutionService";
+import type { SegmentationAnchor } from "./segmentationService";
 
 const EXPORT_SIZE = 512;
+
+export interface IconExportOptions {
+  enhanceFace?: boolean;
+  onEnhancementProgress?: (progress: SuperResolutionProgress) => void;
+  signal?: AbortSignal;
+  subjectAnchor?: SegmentationAnchor;
+}
+
+export interface IconExportResult {
+  enhanced: boolean;
+  warning?: string;
+}
 
 export async function downloadIcon(
   image: ProcessedImage,
@@ -13,9 +30,18 @@ export async function downloadIcon(
   shape: IconShape,
   effectOptions: EffectOptions = DEFAULT_EFFECT_OPTIONS,
   backgroundOptions: BackgroundOptions = DEFAULT_BACKGROUND_OPTIONS,
-) {
-  const blob = await createIconPngBlob(image, crop, shape, effectOptions, backgroundOptions);
-  saveBlob(blob, buildDownloadFileName(image.originalName));
+  options: IconExportOptions = {},
+): Promise<IconExportResult> {
+  const result = await createIconPngBlob(
+    image,
+    crop,
+    shape,
+    effectOptions,
+    backgroundOptions,
+    options,
+  );
+  saveBlob(result.blob, buildDownloadFileName(image.originalName));
+  return { enhanced: result.enhanced, warning: result.warning };
 }
 
 export async function shareIcon(
@@ -24,10 +50,18 @@ export async function shareIcon(
   shape: IconShape,
   effectOptions: EffectOptions = DEFAULT_EFFECT_OPTIONS,
   backgroundOptions: BackgroundOptions = DEFAULT_BACKGROUND_OPTIONS,
-) {
-  const blob = await createIconPngBlob(image, crop, shape, effectOptions, backgroundOptions);
+  options: IconExportOptions = {},
+): Promise<IconExportResult> {
+  const result = await createIconPngBlob(
+    image,
+    crop,
+    shape,
+    effectOptions,
+    backgroundOptions,
+    options,
+  );
   const fileName = buildDownloadFileName(image.originalName);
-  const file = new File([blob], fileName, { type: "image/png" });
+  const file = new File([result.blob], fileName, { type: "image/png" });
 
   if (navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
     try {
@@ -35,15 +69,16 @@ export async function shareIcon(
         files: [file],
         title: "Face Icon",
       });
-      return;
+      return { enhanced: result.enhanced, warning: result.warning };
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") {
-        return;
+        return { enhanced: result.enhanced, warning: result.warning };
       }
     }
   }
 
-  saveBlob(blob, fileName);
+  saveBlob(result.blob, fileName);
+  return { enhanced: result.enhanced, warning: result.warning };
 }
 
 async function createIconPngBlob(
@@ -52,15 +87,53 @@ async function createIconPngBlob(
   shape: IconShape,
   effectOptions: EffectOptions,
   backgroundOptions: BackgroundOptions,
+  options: IconExportOptions,
 ) {
   const source = await loadImage(image.url);
   const canvas = document.createElement("canvas");
   canvas.width = EXPORT_SIZE;
   canvas.height = EXPORT_SIZE;
 
-  await renderIconToCanvas(canvas, source, crop, shape, effectOptions, backgroundOptions);
+  let renderSource: CanvasImageSource = source;
+  let renderCrop = crop;
+  let enhanced = false;
+  let warning: string | undefined;
 
-  return new Promise<Blob>((resolve, reject) => {
+  if (options.enhanceFace) {
+    try {
+      const result = await upscaleFaceCrop(
+        source,
+        crop,
+        options.onEnhancementProgress,
+        options.signal,
+      );
+      renderSource = result.canvas;
+      renderCrop = {
+        x: 0,
+        y: 0,
+        width: result.canvas.width,
+        height: result.canvas.height,
+      };
+      enhanced = true;
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        throw error;
+      }
+      warning = "Face enhancement was unavailable. Saved the standard PNG instead.";
+    }
+  }
+
+  await renderIconToCanvas(
+    canvas,
+    renderSource,
+    renderCrop,
+    shape,
+    effectOptions,
+    backgroundOptions,
+    options.subjectAnchor,
+  );
+
+  const blob = await new Promise<Blob>((resolve, reject) => {
     canvas.toBlob((result) => {
       if (result) {
         resolve(result);
@@ -70,6 +143,8 @@ async function createIconPngBlob(
       reject(new Error("PNG export failed."));
     }, "image/png");
   });
+
+  return { blob, enhanced, warning };
 }
 
 function saveBlob(blob: Blob, fileName: string) {

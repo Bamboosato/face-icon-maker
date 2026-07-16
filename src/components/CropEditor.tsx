@@ -1,7 +1,7 @@
 import { Brush, Check, Circle, Grid2x2, Palette, Sparkles, Square } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import ReactCrop, { type Crop as ReactCropValue } from "react-image-crop";
-import { clampCropToImage } from "../services/cropService";
+import { clampCropToImage, createSegmentationAnchor } from "../services/cropService";
 import {
   BACKGROUND_SWATCHES,
   type BackgroundMode,
@@ -17,6 +17,7 @@ import {
   type PixelArtSize,
 } from "../types/effect";
 import type { ProcessedImage } from "../types/image";
+import type { FaceBox } from "../types/face";
 import { IconPreview } from "./IconPreview";
 import { ScreenToolbar } from "./FaceSelector";
 
@@ -31,6 +32,7 @@ interface CropEditorProps {
   crop: CropArea;
   effectOptions: EffectOptions;
   image: ProcessedImage;
+  selectedFace: FaceBox;
   shape: IconShape;
   onBack: () => void;
   onBackgroundOptionsChange: (options: BackgroundOptions) => void;
@@ -46,6 +48,7 @@ export function CropEditor({
   crop,
   effectOptions,
   image,
+  selectedFace,
   shape,
   onBack,
   onBackgroundOptionsChange,
@@ -55,6 +58,10 @@ export function CropEditor({
   onEffectOptionsChange,
   onShapeChange,
 }: CropEditorProps) {
+  const subjectAnchor = useMemo(
+    () => createSegmentationAnchor(selectedFace, crop),
+    [crop, selectedFace],
+  );
   const percentCrop = useMemo(() => toPercentCrop(crop, image), [crop, image]);
   const [uiCrop, setUiCrop] = useState<ReactCropValue>(percentCrop);
 
@@ -113,6 +120,7 @@ export function CropEditor({
             crop={crop}
             effectOptions={effectOptions}
             shape={shape}
+            subjectAnchor={subjectAnchor}
             onBackgroundProcessingChange={onBackgroundProcessingChange}
           />
 
