@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="elephant-ear" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#b9a9a1"/>
+      <stop offset="0.58" stop-color="#8f7c78"/>
+      <stop offset="1" stop-color="#625359"/>
+    </linearGradient>
+    <linearGradient id="elephant-inner-ear" x1="0" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="#dfcbc1"/>
+      <stop offset="0.7" stop-color="#b3918c"/>
+      <stop offset="1" stop-color="#80686b"/>
+    </linearGradient>
+    <linearGradient id="elephant-skin" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#c9bbb5"/>
+      <stop offset="0.6" stop-color="#9e8c89"/>
+      <stop offset="1" stop-color="#746368"/>
+    </linearGradient>
+    <linearGradient id="elephant-nose" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6b5a5e"/>
+      <stop offset="1" stop-color="#302a31"/>
+    </linearGradient>
+  </defs>
+
+  <g stroke="#51454d" stroke-width="7" stroke-linejoin="round" stroke-linecap="round">
+    <path fill="url(#elephant-ear)" d="M43 158C22 132 28 87 57 62c29-25 74-30 108-10 29 17 44 48 35 77-8 27-31 47-61 56-36 11-76 1-96-27z"/>
+    <path fill="url(#elephant-ear)" d="M469 158c21-26 15-71-14-96-29-25-74-30-108-10-29 17-44 48-35 77 8 27 31 47 61 56 36 11 76 1 96-27z"/>
+    <path fill="url(#elephant-inner-ear)" stroke-width="5" d="M61 137c-10-21-2-46 19-61 22-16 52-18 74-6 21 12 30 33 24 53-7 20-26 34-48 39-28 6-58-3-69-25z"/>
+    <path fill="url(#elephant-inner-ear)" stroke-width="5" d="M451 137c10-21 2-46-19-61-22-16-52-18-74-6-21 12-30 33-24 53 7 20 26 34 48 39 28 6 58-3 69-25z"/>
+    <path fill="none" stroke="#eee1da" stroke-width="4" opacity="0.48" d="M49 121c21-30 57-42 88-32m-76 57c25 13 51 15 76 7m326-32c-21-30-57-42-88-32m76 57c-25 13-51 15-76 7"/>
+    <path fill="url(#elephant-skin)" stroke-width="5" d="M218 271c4-18 18-27 38-27s34 9 38 27v61c0 25-13 55-38 55s-38-30-38-55z"/>
+    <path fill="url(#elephant-nose)" d="M232 275c6-13 42-13 48 0 3 12-8 24-24 28-16-4-27-16-24-28z"/>
+    <ellipse cx="244" cy="277" rx="7" ry="4" fill="#ffffff" stroke="none" opacity="0.32"/>
+    <path fill="none" stroke="#d9cac2" stroke-width="4" opacity="0.6" d="M226 302c10 8 20 12 30 12m30-12c-10 8-20 12-30 12"/>
+    <path fill="#fff2d8" stroke-width="4" d="M226 328c-16 8-22 24-18 39 15-3 27-13 34-29z"/>
+    <path fill="#fff2d8" stroke-width="4" d="M286 328c16 8 22 24 18 39-15-3-27-13-34-29z"/>
+    <path fill="none" stroke="#756268" stroke-width="4" opacity="0.55" d="M230 366c10 8 18 11 26 11m26-11c-10 8-18 11-26 11"/>
+  </g>
+</svg>

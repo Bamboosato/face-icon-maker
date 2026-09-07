@@ -18,6 +18,8 @@ import {
 } from "../types/effect";
 import type { ProcessedImage } from "../types/image";
 import type { FaceBox } from "../types/face";
+import type { AnimalEffectOptions } from "../types/animal";
+import { AnimalPresetControl } from "./AnimalPresetControl";
 import { IconPreview } from "./IconPreview";
 import { ScreenToolbar } from "./FaceSelector";
 
@@ -41,6 +43,8 @@ interface CropEditorProps {
   onCropChange: (crop: CropArea) => void;
   onEffectOptionsChange: (options: EffectOptions) => void;
   onShapeChange: (shape: IconShape) => void;
+  animalEffect: AnimalEffectOptions;
+  onAnimalEffectChange: (options: AnimalEffectOptions) => void;
 }
 
 export function CropEditor({
@@ -57,6 +61,8 @@ export function CropEditor({
   onCropChange,
   onEffectOptionsChange,
   onShapeChange,
+  animalEffect,
+  onAnimalEffectChange,
 }: CropEditorProps) {
   const subjectAnchor = useMemo(
     () => createSegmentationAnchor(selectedFace, crop),
@@ -119,9 +125,16 @@ export function CropEditor({
             backgroundOptions={backgroundOptions}
             crop={crop}
             effectOptions={effectOptions}
+            animalEffect={animalEffect}
             shape={shape}
             subjectAnchor={subjectAnchor}
             onBackgroundProcessingChange={onBackgroundProcessingChange}
+          />
+
+          <AnimalPresetControl
+            disabled={!animalEffect.landmarks}
+            value={animalEffect.preset}
+            onChange={(preset) => onAnimalEffectChange({ ...animalEffect, preset })}
           />
 
           <div className="control-group">

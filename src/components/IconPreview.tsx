@@ -5,6 +5,7 @@ import type { CropArea, IconShape } from "../types/crop";
 import { DEFAULT_EFFECT_OPTIONS, type EffectOptions } from "../types/effect";
 import type { ProcessedImage } from "../types/image";
 import type { SegmentationAnchor } from "../services/segmentationService";
+import type { AnimalEffectOptions } from "../types/animal";
 
 interface IconPreviewProps {
   backgroundOptions?: BackgroundOptions;
@@ -14,6 +15,7 @@ interface IconPreviewProps {
   shape: IconShape;
   subjectAnchor?: SegmentationAnchor;
   onBackgroundProcessingChange?: (isProcessing: boolean) => void;
+  animalEffect?: AnimalEffectOptions;
 }
 
 export function IconPreview({
@@ -24,6 +26,7 @@ export function IconPreview({
   shape,
   subjectAnchor,
   onBackgroundProcessingChange,
+  animalEffect,
 }: IconPreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -67,6 +70,7 @@ export function IconPreview({
           effectOptions,
           backgroundOptions,
           subjectAnchor,
+          animalEffect,
         );
 
         if (cancelled) {
@@ -89,6 +93,7 @@ export function IconPreview({
     };
   }, [
     backgroundOptions,
+    animalEffect,
     crop,
     effectOptions,
     image.url,

@@ -14,6 +14,11 @@ export default defineConfig({
           dest: "litert/wasm",
           rename: { stripBase: true },
         },
+        {
+          src: "node_modules/@mediapipe/tasks-vision/wasm/*",
+          dest: "mediapipe/wasm",
+          rename: { stripBase: true },
+        },
       ],
     }),
   ],

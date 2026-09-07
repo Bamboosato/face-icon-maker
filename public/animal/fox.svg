@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="fox-fur" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f08a4d"/>
+      <stop offset="0.55" stop-color="#d35d32"/>
+      <stop offset="1" stop-color="#9b382b"/>
+    </linearGradient>
+    <linearGradient id="fox-inner-ear" x1="0" y1="0" x2="0.85" y2="1">
+      <stop offset="0" stop-color="#ffe0bc"/>
+      <stop offset="0.65" stop-color="#f2b17e"/>
+      <stop offset="1" stop-color="#b85b45"/>
+    </linearGradient>
+    <radialGradient id="fox-muzzle" cx="48%" cy="30%" r="76%">
+      <stop offset="0" stop-color="#f4d5ad"/>
+      <stop offset="0.7" stop-color="#d99b6b"/>
+      <stop offset="1" stop-color="#a8624a"/>
+    </radialGradient>
+    <linearGradient id="fox-nose" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4b2c2d"/>
+      <stop offset="0.55" stop-color="#20191d"/>
+      <stop offset="1" stop-color="#0d0b10"/>
+    </linearGradient>
+  </defs>
+
+  <g stroke="#4a2a24" stroke-width="7" stroke-linejoin="round" stroke-linecap="round">
+    <path fill="url(#fox-fur)" d="M54 168 87 28c3-17 12-21 26-9l111 105c10 9 12 17 7 29l-22 35c-4 9-12 11-22 8l-88-24c-11-4-17-10-15-15z"/>
+    <path fill="url(#fox-fur)" d="m458 168-33-140c-3-17-12-21-26-9L288 124c-10 9-12 17-7 29l22 35c4 9 12 11 22 8l88-24c11-4 17-10 15-15z"/>
+    <path fill="url(#fox-inner-ear)" stroke-width="5" d="m91 145 22-85 79 76-16 29z"/>
+    <path fill="url(#fox-inner-ear)" stroke-width="5" d="m421 145-22-85-79 76 16 29z"/>
+    <path fill="none" stroke="#ffbb80" stroke-width="5" opacity="0.72" d="M77 157c27 6 53 10 76 16m-59-48c14 19 32 34 54 47m346-15c-27 6-53 10-76 16m59-48c-14 19-32 34-54 47"/>
+    <path fill="url(#fox-muzzle)" stroke-width="5" d="M190 315c5-27 31-42 66-42s61 15 66 42c5 28-23 58-66 59s-71-31-66-59z"/>
+    <path fill="#f7dfbc" stroke="none" opacity="0.55" d="M204 311c10-17 27-25 52-25s42 8 52 25c-11 15-28 23-52 23s-41-8-52-23z"/>
+    <path fill="url(#fox-nose)" d="m231 280 25 24 25-24-25-25z"/>
+    <ellipse cx="246" cy="282" rx="7" ry="4" fill="#ffffff" stroke="none" opacity="0.35"/>
+    <path fill="none" d="M256 304v28m0 0-45 14m45-14 45 14"/>
+    <path fill="none" stroke="#8b4a3b" stroke-width="4" opacity="0.72" d="M212 343c15 18 30 24 44 24m44-24c-15 18-30 24-44 24"/>
+  </g>
+</svg>

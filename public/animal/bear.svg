@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="bear-ear" cx="38%" cy="28%" r="78%">
+      <stop offset="0" stop-color="#b88c6d"/>
+      <stop offset="0.62" stop-color="#8d654d"/>
+      <stop offset="1" stop-color="#5d4338"/>
+    </radialGradient>
+    <radialGradient id="bear-inner-ear" cx="38%" cy="30%" r="78%">
+      <stop offset="0" stop-color="#e1b184"/>
+      <stop offset="0.65" stop-color="#ba835e"/>
+      <stop offset="1" stop-color="#805542"/>
+    </radialGradient>
+    <radialGradient id="bear-muzzle" cx="42%" cy="28%" r="80%">
+      <stop offset="0" stop-color="#e8bd91"/>
+      <stop offset="0.65" stop-color="#bf8a61"/>
+      <stop offset="1" stop-color="#84563f"/>
+    </radialGradient>
+    <linearGradient id="bear-nose" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#50403c"/>
+      <stop offset="0.55" stop-color="#241d20"/>
+      <stop offset="1" stop-color="#0e0c10"/>
+    </linearGradient>
+  </defs>
+
+  <g stroke="#44342f" stroke-width="7" stroke-linejoin="round" stroke-linecap="round">
+    <path fill="url(#bear-ear)" d="M44 141c-13-30-2-62 24-82 25-20 61-26 91-13 31 13 49 42 45 72-4 33-28 55-58 62-38 9-84-5-102-39z"/>
+    <path fill="url(#bear-ear)" d="M468 141c13-30 2-62-24-82-25-20-61-26-91-13-31 13-49 42-45 72 4 33 28 55 58 62 38 9 84-5 102-39z"/>
+    <path fill="url(#bear-inner-ear)" stroke-width="5" d="M67 125c-7-19 2-39 20-51 18-12 42-14 59-4 17 10 24 27 20 44-4 18-19 30-38 34-25 5-54-3-61-23z"/>
+    <path fill="url(#bear-inner-ear)" stroke-width="5" d="M445 125c7-19-2-39-20-51-18-12-42-14-59-4-17 10-24 27-20 44 4 18 19 30 38 34 25 5 54-3 61-23z"/>
+    <path fill="none" stroke="#d3a47d" stroke-width="4" opacity="0.62" d="M51 119c15-34 48-54 82-52m-72 78c26 17 57 20 84 9m316-35c-15-34-48-54-82-52m72 78c-26 17-57 20-84 9"/>
+    <ellipse fill="url(#bear-muzzle)" stroke-width="5" cx="256" cy="330" rx="86" ry="65"/>
+    <ellipse cx="218" cy="323" rx="38" ry="29" fill="#e5b98d" stroke="none" opacity="0.48"/>
+    <ellipse cx="294" cy="323" rx="38" ry="29" fill="#e5b98d" stroke="none" opacity="0.48"/>
+    <path fill="url(#bear-nose)" d="M224 280c8-17 56-17 64 0 4 15-10 31-32 36-22-5-36-21-32-36z"/>
+    <ellipse cx="243" cy="282" rx="10" ry="5" fill="#ffffff" stroke="none" opacity="0.34"/>
+    <path fill="none" d="M256 316v19m0 0c-17 18-37 14-51 2m51-2c17 18 37 14 51 2"/>
+    <path fill="none" stroke="#744832" stroke-width="4" opacity="0.68" d="M213 342c13 19 27 27 43 27m43-27c-13 19-27 27-43 27"/>
+  </g>
+</svg>

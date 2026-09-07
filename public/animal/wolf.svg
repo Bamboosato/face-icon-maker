@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="wolf-fur" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#b8bdc4"/>
+      <stop offset="0.58" stop-color="#7c858e"/>
+      <stop offset="1" stop-color="#48515d"/>
+    </linearGradient>
+    <linearGradient id="wolf-inner-ear" x1="0" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="#ded0cf"/>
+      <stop offset="0.7" stop-color="#aa898f"/>
+      <stop offset="1" stop-color="#765e6a"/>
+    </linearGradient>
+    <radialGradient id="wolf-muzzle" cx="42%" cy="28%" r="78%">
+      <stop offset="0" stop-color="#e2e1dc"/>
+      <stop offset="0.7" stop-color="#b4b2af"/>
+      <stop offset="1" stop-color="#72757a"/>
+    </radialGradient>
+    <linearGradient id="wolf-nose" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4a4850"/>
+      <stop offset="1" stop-color="#111218"/>
+    </linearGradient>
+  </defs>
+
+  <g stroke="#3f4650" stroke-width="7" stroke-linejoin="round" stroke-linecap="round">
+    <path fill="url(#wolf-fur)" d="M64 170 91 34c3-17 14-22 27-10l105 99c9 8 11 16 6 27l-27 46c-4 8-11 11-20 8l-98-25c-12-3-22-4-20-9z"/>
+    <path fill="url(#wolf-fur)" d="m448 170-27-136c-3-17-14-22-27-10L289 123c-9 8-11 16-6 27l27 46c4 8 11 11 20 8l98-25c12-3 22-4 20-9z"/>
+    <path fill="url(#wolf-inner-ear)" stroke-width="5" d="m93 145 18-83 76 71-18 33z"/>
+    <path fill="url(#wolf-inner-ear)" stroke-width="5" d="m419 145-18-83-76 71 18 33z"/>
+    <path fill="none" stroke="#e4e8eb" stroke-width="4" opacity="0.58" d="M76 151c26 6 50 11 72 18m-55-57c15 20 32 35 54 48m344-9c-26 6-50 11-72 18m55-57c-15 20-32 35-54 48"/>
+    <path fill="url(#wolf-muzzle)" stroke-width="5" d="M190 316c5-27 31-42 66-42s61 15 66 42c5 28-23 58-66 59s-71-31-66-59z"/>
+    <path fill="#eeeae3" stroke="none" opacity="0.5" d="M204 312c10-17 27-25 52-25s42 8 52 25c-11 15-28 23-52 23s-41-8-52-23z"/>
+    <path fill="url(#wolf-nose)" d="m231 280 25 24 25-24-25-25z"/>
+    <ellipse cx="246" cy="282" rx="7" ry="4" fill="#ffffff" stroke="none" opacity="0.35"/>
+    <path fill="none" d="M256 304v28m0 0-45 14m45-14 45 14"/>
+    <path fill="none" stroke="#68717b" stroke-width="4" opacity="0.72" d="M212 343c15 18 30 24 44 24m44-24c-15 18-30 24-44 24"/>
+  </g>
+</svg>
