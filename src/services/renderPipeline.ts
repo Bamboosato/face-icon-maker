@@ -1,6 +1,8 @@
 import type { CropArea, IconShape } from "../types/crop";
 import { DEFAULT_EFFECT_OPTIONS, type EffectOptions } from "../types/effect";
 import { DEFAULT_BACKGROUND_OPTIONS, type BackgroundOptions } from "../types/background";
+import type { AnimalEffectOptions } from "../types/animal";
+import { applyAnimalEffect } from "./animalEffectService";
 import {
   createPersonMask,
   SELECTED_OBJECT_MASK_THRESHOLD,
@@ -19,6 +21,7 @@ export async function renderIconToCanvas(
   effectOptions: EffectOptions = DEFAULT_EFFECT_OPTIONS,
   backgroundOptions: BackgroundOptions = DEFAULT_BACKGROUND_OPTIONS,
   subjectAnchor?: SegmentationAnchor,
+  animalEffect?: AnimalEffectOptions,
 ) {
   const context = canvas.getContext("2d");
 
@@ -55,11 +58,13 @@ export async function renderIconToCanvas(
     if (personMask) {
       applyBackgroundWithMask(workCanvas, backgroundOptions, personMask);
     }
+    await applyAnimalEffect(workCanvas, crop, animalEffect ?? { preset: "none", landmarks: null });
   } else {
     if (backgroundOptions.mode !== "original") {
       await applyBackground(workCanvas, backgroundOptions, subjectAnchor);
     }
 
+    await applyAnimalEffect(workCanvas, crop, animalEffect ?? { preset: "none", landmarks: null });
     applyEffect(workCanvas, effectOptions);
   }
 

@@ -9,6 +9,8 @@ import {
   type SuperResolutionProgress,
 } from "./superResolutionService";
 import type { SegmentationAnchor } from "./segmentationService";
+import type { AnimalEffectOptions } from "../types/animal";
+import { remapFaceLandmarkSet } from "./faceLandmarkGeometry";
 
 const EXPORT_SIZE = 512;
 
@@ -17,6 +19,7 @@ export interface IconExportOptions {
   onEnhancementProgress?: (progress: SuperResolutionProgress) => void;
   signal?: AbortSignal;
   subjectAnchor?: SegmentationAnchor;
+  animalEffect?: AnimalEffectOptions;
 }
 
 export interface IconExportResult {
@@ -96,6 +99,7 @@ async function createIconPngBlob(
 
   let renderSource: CanvasImageSource = source;
   let renderCrop = crop;
+  let renderAnimalEffect = options.animalEffect;
   let enhanced = false;
   let warning: string | undefined;
 
@@ -114,6 +118,12 @@ async function createIconPngBlob(
         width: result.canvas.width,
         height: result.canvas.height,
       };
+      if (renderAnimalEffect?.landmarks) {
+        renderAnimalEffect = {
+          ...renderAnimalEffect,
+          landmarks: remapFaceLandmarkSet(renderAnimalEffect.landmarks, crop, renderCrop),
+        };
+      }
       enhanced = true;
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") {
@@ -131,6 +141,7 @@ async function createIconPngBlob(
     effectOptions,
     backgroundOptions,
     options.subjectAnchor,
+    renderAnimalEffect,
   );
 
   const blob = await new Promise<Blob>((resolve, reject) => {

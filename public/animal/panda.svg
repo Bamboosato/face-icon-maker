@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="panda-ear" cx="38%" cy="28%" r="78%">
+      <stop offset="0" stop-color="#4d4d54"/>
+      <stop offset="0.65" stop-color="#292a31"/>
+      <stop offset="1" stop-color="#111218"/>
+    </radialGradient>
+    <radialGradient id="panda-muzzle" cx="42%" cy="28%" r="78%">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.7" stop-color="#e9e9e5"/>
+      <stop offset="1" stop-color="#bcbcc0"/>
+    </radialGradient>
+    <linearGradient id="panda-nose" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#45454d"/>
+      <stop offset="0.55" stop-color="#1d1e25"/>
+      <stop offset="1" stop-color="#090a0f"/>
+    </linearGradient>
+  </defs>
+
+  <g stroke="#24252d" stroke-width="7" stroke-linejoin="round" stroke-linecap="round">
+    <path fill="url(#panda-ear)" d="M48 127c-9-36 12-70 47-83 35-13 73 1 87 32 14 31-1 64-31 81-36 20-92 12-103-30z"/>
+    <path fill="url(#panda-ear)" d="M464 127c9-36-12-70-47-83-35-13-73 1-87 32-14 31 1 64 31 81 36 20 92 12 103-30z"/>
+    <path fill="none" stroke="#777780" stroke-width="4" opacity="0.55" d="M57 113c17-30 50-45 78-32m320 32c-17-30-50-45-78-32"/>
+    <path fill="none" stroke="#3c3d46" stroke-width="22" opacity="0.62" d="M152 224c-17-24-11-53 13-66 24-13 52-4 64 20m131 46c17-24 11-53-13-66-24-13-52-4-64 20"/>
+    <ellipse fill="url(#panda-muzzle)" stroke-width="5" cx="256" cy="329" rx="84" ry="64"/>
+    <ellipse cx="218" cy="322" rx="35" ry="27" fill="#ffffff" stroke="none" opacity="0.62"/>
+    <ellipse cx="294" cy="322" rx="35" ry="27" fill="#ffffff" stroke="none" opacity="0.62"/>
+    <path fill="url(#panda-nose)" d="M224 280c8-17 56-17 64 0 4 15-10 31-32 36-22-5-36-21-32-36z"/>
+    <ellipse cx="243" cy="282" rx="10" ry="5" fill="#ffffff" stroke="none" opacity="0.34"/>
+    <path fill="none" d="M256 316v19m0 0c-17 18-37 14-51 2m51-2c17 18 37 14 51 2"/>
+    <path fill="none" stroke="#75757e" stroke-width="4" opacity="0.7" d="M213 342c13 19 27 27 43 27m43-27c-13 19-27 27-43 27"/>
+  </g>
+</svg>

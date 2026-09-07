@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="rabbit-ear" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f5d5d3"/>
+      <stop offset="0.58" stop-color="#d9a5ae"/>
+      <stop offset="1" stop-color="#a86f7e"/>
+    </linearGradient>
+    <linearGradient id="rabbit-inner-ear" x1="0" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="#ffe8e5"/>
+      <stop offset="0.65" stop-color="#efb3bd"/>
+      <stop offset="1" stop-color="#c2778c"/>
+    </linearGradient>
+    <radialGradient id="rabbit-muzzle" cx="42%" cy="28%" r="78%">
+      <stop offset="0" stop-color="#f8e2d5"/>
+      <stop offset="0.7" stop-color="#e2b6aa"/>
+      <stop offset="1" stop-color="#b9827f"/>
+    </radialGradient>
+    <linearGradient id="rabbit-nose" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e78c9d"/>
+      <stop offset="1" stop-color="#a74c68"/>
+    </linearGradient>
+  </defs>
+
+  <g stroke="#5a3d48" stroke-width="7" stroke-linejoin="round" stroke-linecap="round">
+    <path fill="url(#rabbit-ear)" d="M119 187C91 128 86 49 112 23c17-17 37-5 47 22l37 113c8 25 1 43-18 52-22 10-48 2-59-23z"/>
+    <path fill="url(#rabbit-ear)" d="M393 187c28-59 33-138 7-164-17-17-37-5-47 22l-37 113c-8 25-1 43 18 52 22 10 48 2 59-23z"/>
+    <path fill="url(#rabbit-inner-ear)" stroke-width="5" d="M128 151c-12-38-15-83-3-103 7-11 17-3 23 14l31 98c4 13 1 22-9 26-17 5-35-11-42-35z"/>
+    <path fill="url(#rabbit-inner-ear)" stroke-width="5" d="M384 151c12-38 15-83 3-103-7-11-17-3-23 14l-31 98c-4 13-1 22 9 26 17 5 35-11 42-35z"/>
+    <path fill="none" stroke="#fff1ee" stroke-width="4" opacity="0.65" d="M111 102c9 24 17 47 25 70m265-70c-9 24-17 47-25 70"/>
+    <ellipse fill="url(#rabbit-muzzle)" stroke-width="5" cx="256" cy="326" rx="75" ry="58"/>
+    <path fill="url(#rabbit-nose)" d="M238 286c5-12 31-12 36 0 2 11-6 20-18 24-12-4-20-13-18-24z"/>
+    <ellipse cx="247" cy="287" rx="6" ry="3" fill="#ffffff" stroke="none" opacity="0.4"/>
+    <path fill="none" d="M256 310v25m0 0c-15 14-29 11-41 2m41-2c15 14 29 11 41 2"/>
+    <path fill="none" stroke="#9b626f" stroke-width="4" opacity="0.7" d="M221 343c12 16 24 22 35 22m35-22c-12 16-24 22-35 22"/>
+  </g>
+</svg>

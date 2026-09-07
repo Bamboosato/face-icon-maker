@@ -7,10 +7,8 @@ import type { FaceBox } from "../types/face";
 import type { ProcessedImage } from "../types/image";
 import { loadImage } from "./renderPipeline";
 
-const TASKS_VERSION = "0.10.35";
-const WASM_URL = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${TASKS_VERSION}/wasm`;
-const MODEL_URL =
-  "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/latest/blaze_face_short_range.tflite";
+const WASM_URL = "/mediapipe/wasm";
+const MODEL_URL = "/models/blaze_face_short_range.tflite";
 
 let detectorPromise: Promise<FaceDetector> | undefined;
 

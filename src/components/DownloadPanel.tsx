@@ -14,6 +14,7 @@ import type { FaceBox } from "../types/face";
 import { createSegmentationAnchor } from "../services/cropService";
 import { buildDownloadFileName } from "../utils/fileName";
 import { IconPreview } from "./IconPreview";
+import type { AnimalEffectOptions } from "../types/animal";
 
 interface DownloadPanelProps {
   backgroundOptions: BackgroundOptions;
@@ -25,6 +26,7 @@ interface DownloadPanelProps {
   onBackgroundProcessingChange: (isProcessing: boolean) => void;
   onEdit: () => void;
   onReset: () => void;
+  animalEffect: AnimalEffectOptions;
 }
 
 export function DownloadPanel({
@@ -37,6 +39,7 @@ export function DownloadPanel({
   onBackgroundProcessingChange,
   onEdit,
   onReset,
+  animalEffect,
 }: DownloadPanelProps) {
   const isSmartphone = useIsSmartphone();
   const [processing, setProcessing] = useState(false);
@@ -73,6 +76,7 @@ export function DownloadPanel({
         signal: abortController.signal,
         onEnhancementProgress: ({ message }: { message: string }) => setStatusMessage(message),
         subjectAnchor,
+        animalEffect,
       };
       const result = isSmartphone
         ? await shareIcon(image, crop, shape, effectOptions, backgroundOptions, options)
@@ -109,6 +113,7 @@ export function DownloadPanel({
           effectOptions={effectOptions}
           shape={shape}
           subjectAnchor={subjectAnchor}
+          animalEffect={animalEffect}
           onBackgroundProcessingChange={onBackgroundProcessingChange}
         />
         <p className="file-name">{buildDownloadFileName(image.originalName)}</p>

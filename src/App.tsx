@@ -1,11 +1,12 @@
 import { AlertTriangle, Loader2 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CropEditor } from "./components/CropEditor";
 import { DownloadPanel } from "./components/DownloadPanel";
 import { FaceSelector } from "./components/FaceSelector";
 import { UploadArea } from "./components/UploadArea";
 import { createAutoCrop } from "./services/cropService";
 import { detectFaces } from "./services/faceDetection";
+import { detectSelectedFaceLandmarks } from "./services/faceLandmarker";
 import { processImageFile } from "./services/imageService";
 import {
   DEFAULT_BACKGROUND_OPTIONS,
@@ -14,6 +15,7 @@ import {
 import type { CropArea, IconShape } from "./types/crop";
 import { DEFAULT_EFFECT_OPTIONS, type EffectOptions } from "./types/effect";
 import type { FaceBox } from "./types/face";
+import { DEFAULT_ANIMAL_EFFECT_OPTIONS, type AnimalEffectOptions } from "./types/animal";
 import { ImageProcessingError, type ProcessedImage } from "./types/image";
 
 type Screen = "upload" | "select" | "edit" | "download";
@@ -33,10 +35,14 @@ function App() {
   const [effectOptions, setEffectOptions] = useState<EffectOptions>(DEFAULT_EFFECT_OPTIONS);
   const [backgroundOptions, setBackgroundOptions] =
     useState<BackgroundOptions>(DEFAULT_BACKGROUND_OPTIONS);
+  const [animalEffect, setAnimalEffect] = useState<AnimalEffectOptions>(
+    DEFAULT_ANIMAL_EFFECT_OPTIONS,
+  );
   const [detectionThreshold, setDetectionThreshold] = useState(DEFAULT_DETECTION_THRESHOLD);
   const [busyMessage, setBusyMessage] = useState("");
   const [backgroundProcessingCount, setBackgroundProcessingCount] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
+  const landmarkRequestRef = useRef(0);
   const visibleBusyMessage =
     busyMessage || (backgroundProcessingCount > 0 ? "Processing background" : "");
 
@@ -86,6 +92,7 @@ function App() {
       setShape("square");
       setEffectOptions(DEFAULT_EFFECT_OPTIONS);
       setBackgroundOptions(DEFAULT_BACKGROUND_OPTIONS);
+      setAnimalEffect(DEFAULT_ANIMAL_EFFECT_OPTIONS);
       setBackgroundProcessingCount(0);
 
       await runFaceDetection(processedImage, detectionThreshold);
@@ -143,14 +150,41 @@ function App() {
     }
   }
 
-  function handleFaceSelect(face: FaceBox) {
+  async function handleFaceSelect(face: FaceBox) {
     if (!image) {
       return;
     }
 
+    const targetImage = image;
+    const nextCrop = createAutoCrop(face, targetImage);
+    const requestId = ++landmarkRequestRef.current;
+
     setSelectedFace(face);
-    setCrop(createAutoCrop(face, image));
+    setCrop(nextCrop);
+    setAnimalEffect(DEFAULT_ANIMAL_EFFECT_OPTIONS);
     setScreen("edit");
+    setBusyMessage("Analyzing face");
+
+    try {
+      const landmarks = await detectSelectedFaceLandmarks(targetImage, nextCrop, face);
+
+      if (requestId !== landmarkRequestRef.current) {
+        return;
+      }
+
+      setAnimalEffect((current) => ({ ...current, landmarks }));
+    } catch {
+      if (requestId !== landmarkRequestRef.current) {
+        return;
+      }
+
+      setAnimalEffect(DEFAULT_ANIMAL_EFFECT_OPTIONS);
+      setErrorMessage("Animal face analysis failed. You can still save the original crop.");
+    } finally {
+      if (requestId === landmarkRequestRef.current) {
+        setBusyMessage("");
+      }
+    }
   }
 
   function handleReset() {
@@ -165,9 +199,11 @@ function App() {
     setShape("square");
     setEffectOptions(DEFAULT_EFFECT_OPTIONS);
     setBackgroundOptions(DEFAULT_BACKGROUND_OPTIONS);
+    setAnimalEffect(DEFAULT_ANIMAL_EFFECT_OPTIONS);
     setBackgroundProcessingCount(0);
     setErrorMessage("");
     setBusyMessage("");
+    landmarkRequestRef.current += 1;
     setScreen("upload");
   }
 
@@ -222,9 +258,15 @@ function App() {
             backgroundOptions={backgroundOptions}
             crop={crop}
             effectOptions={effectOptions}
+            animalEffect={animalEffect}
             shape={shape}
             selectedFace={selectedFace}
-            onBack={() => setScreen("select")}
+            onAnimalEffectChange={setAnimalEffect}
+            onBack={() => {
+              landmarkRequestRef.current += 1;
+              setBusyMessage("");
+              setScreen("select");
+            }}
             onBackgroundOptionsChange={setBackgroundOptions}
             onBackgroundProcessingChange={handleBackgroundProcessingChange}
             onComplete={() => setScreen("download")}
@@ -240,6 +282,7 @@ function App() {
             backgroundOptions={backgroundOptions}
             crop={crop}
             effectOptions={effectOptions}
+            animalEffect={animalEffect}
             shape={shape}
             selectedFace={selectedFace}
             onBackgroundProcessingChange={handleBackgroundProcessingChange}
