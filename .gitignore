@@ -11,3 +11,6 @@ face-icon-maker-*.png
 test-assets/manual/*
 !test-assets/manual/.gitkeep
 .vercel
+.security-audit/
+public/litert/wasm/
+public/mediapipe/wasm/
