@@ -43,7 +43,7 @@ Node.js 24を `.nvmrc`、`package.json`、README、CIで共通にした。調査
 
 | ジョブ | 初期導入する処理 | 意図 |
 |---|---|---|
-| Verify | checkout、Node設定、`npm ci --include=dev`、`npx --no-install tsc -b`、`npm test`、`npm run build`、配布アセット確認 | lockfile再現性、型、既存18テスト、静的配布の成立を検証する |
+| Verify | checkout、Node / npm設定、`npm ci --include=dev`、`npm run typecheck`、`npm test`、`npm run test:assets`、`npm run build`、`npm run check:assets` | lockfile再現性、型、既存18テスト、静的配布の成立を検証する |
 | Dependency security | checkout、Node設定、`npm ci --include=dev`、`npm run test:security`、`npm run audit:security`、監査JSONアップロード | 監査ポリシーの誤判定と依存の既知脆弱性を独立して検出する |
 
 両ジョブは独立して実行する。依存監査が失敗しても通常検証の結果を取得し、依存問題と実装・ビルド問題を切り分ける。型チェックはアプリとVite設定の両方を対象にする。`npm run build` 内でもTypeScriptが動くが、独立ステップにして原因を明確にする。
@@ -130,9 +130,9 @@ tennis-organizing-appの `security-audit.mjs`、`security-audit-policy.mjs`、�
 - 文書11件のローカルリンク61件の参照先と `git diff --check` を確認した。
 - 更新後の `npm run audit:security` は本番分類0件、全依存0件。これは2026-10-07の監査結果で、将来のアドバイザリ追加を保証しない。
 
-GitHub ActionsのUbuntu検証はPRのChecksで確認する。ワークフローの定義とローカル成功だけを、本番稼働やmain保護の有効化の証拠にしない。
+GitHub ActionsのUbuntu検証は[実装PR #8](https://github.com/Bamboosato/face-icon-maker/pull/8)のChecksで確認できる。機能変更を含む `92cef74c4c4a18f9339d80b4534f3d396b439363` の[CI実行](https://github.com/Bamboosato/face-icon-maker/actions/runs/37574925631)では、Verify / Dependency securityとも成功した。ワークフローの定義とローカル成功だけを、本番稼働やmain保護の有効化の証拠にしない。
 
-初回のUbuntu CIでは `npm ci` が `@emnapi/core` / `@emnapi/runtime` のlockfile不足を検出した。Windows / npm 11.6.2の成功だけでは任意依存のOS差を保証できないため、npm 11.19.0へ合わせて任意依存・同梱依存を含むlockfileを補修した。同版でのWindowsクリーンインストール、再監査、本番ビルド、28アセット照合も成功した。Linux CIを再実行する。この失敗はアプリの機能ではなく、環境差・依存データの問題として記録する。
+初回のUbuntu CIでは `npm ci` が `@emnapi/core` / `@emnapi/runtime` のlockfile不足を検出した。Windows / npm 11.6.2の成功だけでは任意依存のOS差を保証できないため、npm 11.19.0へ合わせて任意依存・同梱依存を含むlockfileを補修した。同版でのWindowsクリーンインストール、再監査、本番ビルド、28アセット照合も成功した。再実行したUbuntu / Node.js 24.21.0 / npm 11.19.0では、クリーンインストール、型、既存18テスト、監査23テスト、配布5テスト、ビルド、28アセット照合、監査0件、監査JSONの保存が成功した。この失敗はアプリの機能ではなく、環境差・依存データの問題として記録する。
 
 E2E範囲は未実施。初期案でLint・E2Eを後続とし、今回はCI・依存更新・配布準備の変更に限定した。顔モデルの推論、描画、PNGの画質、背景除去・超解像の外部取得、競合・失敗注入、クロスブラウザー、スマートフォン実機、Vercel本番の再検証は含めない。配布準備の変更は元データ照合と開発・previewのHTTP配布で確認する。
 

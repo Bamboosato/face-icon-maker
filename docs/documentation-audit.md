@@ -9,7 +9,7 @@
 - `git ls-remote origin refs/heads/main` とローカルHEADが一致し、開始時の作業ツリーに変更がないことを確認
 - 対象: README、AGENTSのプロジェクト説明、`docs` の既存7文書、`src`、配布アセット、ビルド設定、既存テスト
 - この2026-10-06の照合時点では文書のみを変更し、アプリコード・設定・依存関係は変更していない
-- この照合時点ではGitHubへの反映は未実施。続く2026-10-07のCI導入で、文書修正もPRへまとめる。設定・依存更新と現在の検証範囲は[CI導入記録](ci-dependency-check-plan.md)を参照
+- この照合時点ではGitHubへの反映は未実施。続く2026-10-07のCI導入で、文書修正も[PR #8](https://github.com/Bamboosato/face-icon-maker/pull/8)へまとめた。設定・依存更新と現在の検証範囲は[CI導入記録](ci-dependency-check-plan.md)を参照
 
 ## 先に整理した確認観点
 
