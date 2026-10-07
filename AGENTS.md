@@ -42,6 +42,9 @@ When making implementation decisions:
 
 ## MVP Scope
 
+This section defines the original MVP. For the current implemented scope, see
+`README.md` and `docs/requirements.md` (implementation audit: 2026-10-06).
+
 Included:
 
 - Photo upload
@@ -85,6 +88,7 @@ Preferred stack:
 - Vite
 - Tailwind CSS
 - MediaPipe Face Detection
+- MediaPipe Face Landmarker (static selected-face analysis)
 - HTML5 Canvas
 
 ---
@@ -204,19 +208,21 @@ Unless there is a demonstrated need.
 
 ## Future Features
 
-These belong to future phases.
+The following original phase list is retained for planning context. Background
+removal, solid background colors, pixel/comic/paint styles, super resolution,
+and 12 static animal presets are already implemented. A web app manifest and
+icons exist; Service Worker support and guaranteed offline use do not.
+
+Remaining future features:
 
 Phase 2:
 
-- Background removal
-- Background colors
 - Gradient backgrounds
 
 Phase 3:
 
-- Pixel art filter
-- Illustration effects
-- PWA support
+- Additional illustration effects beyond the existing comic/paint styles
+- Service Worker and offline support
 
 Do not implement future features unless explicitly requested.
 
