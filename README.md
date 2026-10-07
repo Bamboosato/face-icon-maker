@@ -75,7 +75,7 @@
 
 ## 開発
 
-前提: Node.js 24系（`.nvmrc` と `package.json` に指定。GitHub Actionsも24系で検証）。
+前提: Node.js 24系 / npm 11.19.0（`.nvmrc` と `package.json` に指定。GitHub Actionsも同じ条件で検証）。Node.jsに同梱されるnpmの版は異なる場合があります。グローバルのnpmを変更しない場合は、以下の `npm` を `npx --yes npm@11.19.0` に置き換えて実行できます。
 
 ```bash
 npm ci --include=dev

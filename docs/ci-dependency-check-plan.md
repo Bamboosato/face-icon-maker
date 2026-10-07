@@ -123,7 +123,7 @@ tennis-organizing-appの `security-audit.mjs`、`security-audit-policy.mjs`、�
 - `vite-plugin-static-copy` を除去し、その依存経路のchokidar / bracesもなくなった。Node標準機能で開発・ビルド前にJS/WASMをpublicへ生成し、Viteのpublic配布を使う。URLと元の14ランタイムファイルは維持した。古いプラグインへのダウングレードも監査例外も採用していない。
 - `audit:security` は本番分類・全依存の2レポートを取得・保存する。全依存側は `--include=dev` を明示し、終了コードと集計の矛盾も遮断する。現行の監査例外ファイルはない。
 - 将来の `security-audit-exception.json` は単一アドバイザリの `advisory`、UTC期限の `expires`、担当の `owner`、理由の `reason`、正確なバージョンの `packages` マップを要する。パスは各パッケージの `node_modules/<name>` のみ許可し、ネスト追加・本番依存化・期限切れ・critical・別問題を遮断する。追加は個別レビューを前提とする。
-- `.github/workflows/ci.yml` に独立したVerify / Dependency securityを追加。導入時の公式最新リリースをGitHub APIで確認し、checkout / setup-node / upload-artifactはv7を採用した。秘密情報は使用しない。監査成果物の保持は14日。
+- `.github/workflows/ci.yml` に独立したVerify / Dependency securityを追加。導入時の公式最新リリースをGitHub APIで確認し、checkout / setup-node / upload-artifactはv7を採用した。Node.js 24、npm 11.19.0を共通にする。秘密情報は使用しない。監査成果物の保持は14日。
 - Windows / Node.js 24.13.0 / npm 11.6.2で `npm ci --include=dev`、型チェック、既存18テスト、監査判定23テスト、配布検査5テスト、本番ビルドが成功した。
 - `npm run check:assets` でモデル2件・SVG12件・JS/WASM14件の計28件が元データと一致した。
 - ローカルのdev / 本番ビルドpreviewからそれぞれ28件をHTTP取得し、内容一致とWASMの `application/wasm` MIMEを確認した。モデル推論のE2Eとは分けて記録する。
@@ -131,6 +131,8 @@ tennis-organizing-appの `security-audit.mjs`、`security-audit-policy.mjs`、�
 - 更新後の `npm run audit:security` は本番分類0件、全依存0件。これは2026-10-07の監査結果で、将来のアドバイザリ追加を保証しない。
 
 GitHub ActionsのUbuntu検証はPRのChecksで確認する。ワークフローの定義とローカル成功だけを、本番稼働やmain保護の有効化の証拠にしない。
+
+初回のUbuntu CIでは `npm ci` が `@emnapi/core` / `@emnapi/runtime` のlockfile不足を検出した。Windows / npm 11.6.2の成功だけでは任意依存のOS差を保証できないため、npm 11.19.0へ合わせて任意依存・同梱依存を含むlockfileを補修した。同版でのWindowsクリーンインストール、再監査、本番ビルド、28アセット照合も成功した。Linux CIを再実行する。この失敗はアプリの機能ではなく、環境差・依存データの問題として記録する。
 
 E2E範囲は未実施。初期案でLint・E2Eを後続とし、今回はCI・依存更新・配布準備の変更に限定した。顔モデルの推論、描画、PNGの画質、背景除去・超解像の外部取得、競合・失敗注入、クロスブラウザー、スマートフォン実機、Vercel本番の再検証は含めない。配布準備の変更は元データ照合と開発・previewのHTTP配布で確認する。
 

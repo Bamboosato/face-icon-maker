@@ -25,6 +25,8 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
+      - name: Pin npm version
+        run: npm install --global npm@11.19.0
       - name: Clean install
         run: npm ci --include=dev
       - name: Type check
@@ -48,6 +50,8 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
+      - name: Pin npm version
+        run: npm install --global npm@11.19.0
       - name: Clean install
         run: npm ci --include=dev
       - name: Security policy tests
